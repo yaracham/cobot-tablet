@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
 //                val result = pyObject.callAttr("detect_emotion").toString()
 //
 //                Log.d("EmotionDetector", "Detected Emotion: $result")
-                LiveEmotionDetectionScreen()
+//                LiveEmotionDetectionScreen()
             }
         }
     }
