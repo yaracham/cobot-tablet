@@ -26,12 +26,6 @@ android {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
     }
-    sourceSets {
-        getByName("main") {
-            assets.srcDirs("assets") // Change this to match your actual path
-        }
-    }
-
     buildTypes {
         release {
             isMinifyEnabled = false
