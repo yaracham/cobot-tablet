@@ -81,6 +81,11 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
-    implementation(libs.tensorflow.lite.v2120)
+
     implementation(libs.tasks.vision)
+    implementation ("org.tensorflow:tensorflow-lite:2.9.0")
+    implementation ("org.tensorflow:tensorflow-lite-gpu:2.9.0")
+    implementation ("org.tensorflow:tensorflow-lite-support:0.4.2")
+
+    implementation ("com.google.mlkit:object-detection:17.0.0")
 }

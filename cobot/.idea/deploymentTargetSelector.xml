@@ -2,12 +2,12 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="cobot">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-04-01T14:52:05.045450600Z">
+        <DropdownSelection timestamp="2025-04-03T14:27:27.798075300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=Tab70WiFiFO010563" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=RZCT41B5S3T" />
             </handle>
           </Target>
         </DropdownSelection>
