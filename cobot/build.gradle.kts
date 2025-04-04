@@ -8,7 +8,8 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven("https://chaquo.com/maven") // for Chaquopy
+        maven("https://chaquo.com/maven")
+//        maven { "https://jitpack.io" }
     }
     dependencies {
         classpath(libs.gradle)

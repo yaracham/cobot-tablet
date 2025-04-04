@@ -93,6 +93,6 @@ dependencies {
 
     implementation ("com.google.mlkit:object-detection:17.0.0")
 
-    implementation("com.google.mediapipe:solution-core:0.10.20")
-    implementation("com.google.mediapipe:pose-landmarker:0.4.3")
+    implementation ("com.google.mediapipe:tasks-vision:0.10.10")
+    implementation ("com.google.mediapipe:tasks-core:0.10.10")
 }
