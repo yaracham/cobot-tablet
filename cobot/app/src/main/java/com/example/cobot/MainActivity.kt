@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
 
                     when (selectedTab) {
                         0 -> LiveEmotionDetectionScreen()
-                        1 -> PersonDetectorScreen()
+                        1 ->
                     }
                 }
             }

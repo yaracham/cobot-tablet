@@ -123,7 +123,7 @@ class PersonDetector(private val context: Context) {
         }
     }
 
-    private fun prepareInputBuffer(bitmap: Bitmap): ByteBuffer {
+     fun prepareInputBuffer(bitmap: Bitmap): ByteBuffer {
         // Model expects FLOAT32 input with shape [1, 640, 640, 3]
         // Total size: 1 * 640 * 640 * 3 * 4 = 4,915,200 bytes
 
@@ -149,7 +149,7 @@ class PersonDetector(private val context: Context) {
     }
 
 
-    private fun runInference(inputBuffer: ByteBuffer): Array<Array<FloatArray>> {
+     fun runInference(inputBuffer: ByteBuffer): Array<Array<FloatArray>> {
         val outputShape = interpreter?.getOutputTensor(0)?.shape() ?: intArrayOf(1, 6300, 85)
 
         // Create output buffer for [1, 6300, 85]
@@ -173,7 +173,7 @@ class PersonDetector(private val context: Context) {
         return outputBuffer
     }
 
-    private fun processOutput(outputBuffer: Array<Array<FloatArray>>): List<Detection> {
+    public fun processOutput(outputBuffer: Array<Array<FloatArray>>): List<Detection> {
         val detections = mutableListOf<Detection>()
 
         // Process each prediction

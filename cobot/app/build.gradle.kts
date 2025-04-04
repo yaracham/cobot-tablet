@@ -5,7 +5,10 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.chaquo.python")
 }
-
+//repositories {
+//    google()
+//    mavenCentral()
+//}
 android {
     namespace = "com.example.cobot"
     compileSdk = 34
@@ -55,6 +58,7 @@ android {
     }
     buildToolsVersion = "34.0.0"
 
+
 }
 
 dependencies {
@@ -88,4 +92,7 @@ dependencies {
     implementation ("org.tensorflow:tensorflow-lite-support:0.4.2")
 
     implementation ("com.google.mlkit:object-detection:17.0.0")
+
+    implementation("com.google.mediapipe:solution-core:0.10.20")
+    implementation("com.google.mediapipe:pose-landmarker:0.4.3")
 }

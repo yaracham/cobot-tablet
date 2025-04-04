@@ -30,6 +30,16 @@ import android.graphics.YuvImage
 import android.graphics.BitmapFactory
 import androidx.camera.core.ImageProxy
 import java.io.ByteArrayOutputStream
+import androidx.core.graphics.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
@@ -115,26 +125,23 @@ fun CameraPreviewWithDetection(
     cameraExecutor: ExecutorService,
     personDetector: PersonDetector
 ) {
-    // State to trigger frame processing
-    var frameCounter by remember { mutableIntStateOf(0) }
+    // Keeps the detected person's position (LEFT/CENTER/RIGHT)
+    val personPosition = remember { mutableStateOf("Detecting...") }
 
-    // Process frames at a reasonable rate
-    LaunchedEffect(Unit) {
-        while(true) {
-            delay(200) // 5 FPS to reduce processing load
-            frameCounter++
-        }
-    }
+    // Keeps the current list of detections (for drawing)
+    val detectionsState = remember { mutableStateOf<List<PersonDetector.Detection>>(emptyList()) }
 
-    AndroidView(
-        factory = { ctx ->
-            val previewView = PreviewView(ctx).apply {
-                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-            }
+    Box(modifier = Modifier.fillMaxSize()) {
 
-            val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
-            cameraProviderFuture.addListener({
-                try {
+        // Live Camera Preview
+        AndroidView(
+            factory = { ctx ->
+                val previewView = PreviewView(ctx).apply {
+                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                }
+
+                val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+                cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
 
                     val preview = Preview.Builder().build().also {
@@ -145,72 +152,106 @@ fun CameraPreviewWithDetection(
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build()
 
-                    // Track the last processed frame
-                    var lastProcessedFrame = 0
-
                     imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
                         try {
-                            // Only process if this is a new frame request
-                            if (frameCounter > lastProcessedFrame) {
-                                lastProcessedFrame = frameCounter
+                            val bitmap = imageProxyToBitmap2(imageProxy)
 
-                                // Convert ImageProxy to Bitmap
-                                val bitmap = imageProxyToBitmap2(imageProxy)
+                            val resized = Bitmap.createScaledBitmap(bitmap, 320, 320, true)
+                            val inputBuffer = personDetector.prepareInputBuffer(resized)
+                            val outputBuffer = personDetector.runInference(inputBuffer)
+                            val detections = personDetector.processOutput(outputBuffer)
+                                .filter { it.classId == 0 } // only persons
 
-                                // Process the bitmap with person detector
-                                val processedBitmap = personDetector.detectPersons(bitmap)
+                            // Update detected positions for canvas
+                            detectionsState.value = detections
 
-                                // Update the preview surface with the processed bitmap
-                                ctx.mainExecutor.execute {
-                                    // Note: In a real app, you would update a composable state here
-                                    // For simplicity, we're just using the camera preview
+                            // Update text label
+                            val person = detections.firstOrNull()
+                            person?.let {
+                                val centerX = (it.boundingBox.left + it.boundingBox.right) / 2
+                                personPosition.value = when {
+                                    centerX < 0.33f -> "LEFT"
+                                    centerX > 0.66f -> "RIGHT"
+                                    else -> "CENTER"
                                 }
+                            } ?: run {
+                                personPosition.value = "NO PERSON"
                             }
+
                         } catch (e: Exception) {
-                            Log.e("CameraPreview", "Image analysis error", e)
+                            Log.e("CameraPreview", "Detection error", e)
                         } finally {
                             imageProxy.close()
                         }
                     }
 
-                    try {
-                        cameraProvider.unbindAll()
+                    val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                    cameraProvider.unbindAll()
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageAnalysis
+                    )
+                }, ContextCompat.getMainExecutor(ctx))
 
-                        // Try to use front camera
-                        try {
-                            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
-                            cameraProvider.bindToLifecycle(
-                                lifecycleOwner,
-                                cameraSelector,
-                                preview,
-                                imageAnalysis
-                            )
-                        } catch (e: Exception) {
-                            // Fall back to back camera if front camera is not available
-                            Log.w("CameraPreview", "Front camera not available, trying back camera", e)
-                            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-                            cameraProvider.bindToLifecycle(
-                                lifecycleOwner,
-                                cameraSelector,
-                                preview,
-                                imageAnalysis
-                            )
-                        }
-                    } catch (e: Exception) {
-                        Log.e("CameraPreview", "Use case binding failed", e)
-                    }
-                } catch (e: Exception) {
-                    Log.e("CameraPreview", "Camera initialization error", e)
-                }
-            }, ContextCompat.getMainExecutor(ctx))
+                previewView
+            },
+            modifier = Modifier.fillMaxSize()
+        )
 
-            previewView
-        },
-        modifier = Modifier.fillMaxSize()
-    )
+        // Position label
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 32.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Text(
+                text = personPosition.value,
+                color = Color.White,
+                fontSize = 28.sp
+            )
+        }
+
+        // Canvas Overlay: Red vertical line + Green dot at person center
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(1f)
+        ) {
+            val paintGreen = android.graphics.Paint().apply {
+                color = android.graphics.Color.GREEN
+                style = android.graphics.Paint.Style.FILL
+            }
+
+            val paintRed = android.graphics.Paint().apply {
+                color = android.graphics.Color.RED
+                strokeWidth = 4f
+            }
+
+            // Vertical red line (middle of the screen)
+            drawContext.canvas.nativeCanvas.drawLine(
+                size.width / 2, 0f,
+                size.width / 2, size.height,
+                paintRed
+            )
+
+            // Green dot: person center
+            val person = detectionsState.value.firstOrNull()
+            person?.let {
+                val cx = it.boundingBox.centerX() * size.width
+                val cy = it.boundingBox.centerY() * size.height
+
+                drawContext.canvas.nativeCanvas.drawCircle(cx, cy, 10f, paintGreen)
+            }
+        }
+    }
 }
 
-private fun imageProxyToBitmap2(imageProxy: ImageProxy): Bitmap {
+
+
+fun imageProxyToBitmap2(imageProxy: ImageProxy): Bitmap {
     val yBuffer = imageProxy.planes[0].buffer
     val uBuffer = imageProxy.planes[1].buffer
     val vBuffer = imageProxy.planes[2].buffer
