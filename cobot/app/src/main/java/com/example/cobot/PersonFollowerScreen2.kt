@@ -90,7 +90,21 @@ fun PersonFollowingScreen2() {
                 detectedPosition = position
             }
         )
-
+        // Animated eyes overlay
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .padding(top = 32.dp)
+        ) {
+            EyesAnimation(
+                position = detectedPosition,
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .align(Alignment.Center)
+                    .background(Color.Black.copy(alpha = 0.3f))
+            )
+        }
         // Position indicator
         Card(
             modifier = Modifier

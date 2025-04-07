@@ -53,11 +53,17 @@ class MainActivity : ComponentActivity() {
                             onClick = { selectedTab = 1 },
                             text = { Text("Person Following") }
                         )
+                        Tab(
+                            selected = selectedTab == 2,
+                            onClick = { selectedTab = 2 },
+                            text = { Text("YOLO Detection") }
+                        )
                     }
 
                     when (selectedTab) {
                         0 -> LiveEmotionDetectionScreen()
                         1 -> PersonFollowingScreen2()
+                        2 -> YoloDetectionScreen()
                     }
                 }
             }
