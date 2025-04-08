@@ -13,6 +13,7 @@ buildscript {
     }
     dependencies {
         classpath(libs.gradle)
+        classpath (libs.gradle.download.task)
     }
 
 }

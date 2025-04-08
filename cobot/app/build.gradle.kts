@@ -1,10 +1,8 @@
 import org.apache.tools.ant.util.JavaEnvUtils.VERSION_1_8
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.chaquo.python")
-}
+    alias(libs.plugins.jetbrains.kotlin.android)}
+//    id("de.undercouch.download") version "5.0.0" }
 //repositories {
 //    google()
 //    mavenCentral()
@@ -61,6 +59,17 @@ android {
 
 }
 
+//val assetDir = layout.projectDirectory.dir("src/main/assets")
+//
+//tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadModelFile") {
+//    src("https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite")
+//    dest(assetDir.file("face_detection_short_range.tflite"))
+//    overwrite(false)
+//}
+//tasks.named("preBuild") {
+//    dependsOn("downloadModelFile")
+//}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -91,9 +100,9 @@ dependencies {
     implementation (libs.tensorflow.lite.v2120)
     implementation (libs.tensorflow.lite.gpu)
     implementation (libs.tensorflow.lite.support)
+    implementation (libs.tasks.vision.v01014)
 
     implementation ("com.google.mlkit:object-detection:17.0.2")
 
-    implementation (libs.tasks.vision.v01010)
     implementation (libs.tasks.core)
 }

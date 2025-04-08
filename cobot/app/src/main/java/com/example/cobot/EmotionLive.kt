@@ -46,7 +46,9 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetector
 import kotlinx.coroutines.delay
 import org.tensorflow.lite.Interpreter
+import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
@@ -186,13 +188,13 @@ fun LiveEmotionDetectionScreen() {
             Log.d("EmotionDetection", "Frame received: ${bitmap.width}x${bitmap.height}")
 
             try {
-//                val faceBitmap = detectAndCropFace(bitmap, context)
-//                if (faceBitmap == null) {
-//                    Log.d("EmotionDetection", "No face detected")
-//                    return@CameraPreview
-//                }
-//
-//                Log.d("EmotionDetection", "Face detected: ${faceBitmap.width}x${faceBitmap.height}")
+                val faceBitmap = detectAndCropFace(bitmap, context)
+                if (faceBitmap == null) {
+                    Log.d("EmotionDetection", "No face detected")
+                    return@CameraPreview
+                }
+
+                Log.d("EmotionDetection", "Face detected: ${faceBitmap.width}x${faceBitmap.height}")
                 val inputBuffer = preprocessImage(bitmap)
 
                 try {
@@ -351,62 +353,121 @@ fun loadModel(context: Context): Interpreter {
         throw RuntimeException("Error loading model: ${e.message}")
     }
 }
-fun detectAndCropFace(bitmap: Bitmap, context: Context): Bitmap? {
+
+
+fun detectAndCropFace(originalBitmap: Bitmap, context: Context): Bitmap? {
+    // Validate input bitmap
+    if (originalBitmap.isRecycled) {
+        Log.e("FaceDetection", "Source bitmap is already recycled")
+        return null
+    }
+
+    // Create TWO copies - one for MediaPipe, one for our operations
+    val mpBitmap = originalBitmap.copy(originalBitmap.config, true)
+    val workingBitmap = originalBitmap.copy(originalBitmap.config, true)
+
     try {
-        // Use the correct face detection model
+        Log.d("FaceDetection", "Processing bitmap: ${originalBitmap.width}x${originalBitmap.height}")
+
+        // Face detection model setup
         val faceDetectionModelPath = "models/face_detection_short_range.tflite"
 
-        // Check if the model file exists
+        // Verify model exists
         try {
-            context.assets.openFd(faceDetectionModelPath).close()
-            Log.d("FaceDetection", "Face detection model found")
+            context.assets.openFd(faceDetectionModelPath).use { fd ->
+                Log.d("FaceDetection", "Model found: ${fd.length} bytes")
+            }
         } catch (e: Exception) {
-            Log.e("FaceDetection", "Face detection model not found: $faceDetectionModelPath", e)
+            Log.e("FaceDetection", "Model not found", e)
             return null
         }
 
-        // Create MediaPipe FaceDetector with the face detection model
+        // Configure face detector
         val options = FaceDetector.FaceDetectorOptions.builder()
             .setBaseOptions(BaseOptions.builder()
                 .setModelAssetPath(faceDetectionModelPath)
                 .build())
             .setRunningMode(RunningMode.IMAGE)
-            .setMinDetectionConfidence(0.5f)
+            .setMinDetectionConfidence(0.3f)
             .build()
 
+        // Create and use face detector
         val faceDetector = FaceDetector.createFromOptions(context, options)
 
-        // Convert bitmap to MediaPipe image
-        val mpImage = BitmapImageBuilder(bitmap).build()
+        try {
+            // Create MediaPipe image with the dedicated bitmap
+            val mpImage = BitmapImageBuilder(mpBitmap).build()
 
-        // Run detection
-        val result = faceDetector.detect(mpImage)
+            try {
+                // Run face detection
+                val startTime = System.currentTimeMillis()
+                val result = faceDetector.detect(mpImage)
+                Log.d("FaceDetection", "Detection took ${System.currentTimeMillis() - startTime}ms")
 
-        // Close resources
-        faceDetector.close()
-        mpImage.close()
+                // Process results
+                if (result.detections().isEmpty()) {
+                    Log.d("FaceDetection", "No faces detected")
+                    return null
+                }
 
-        // If no faces detected, return null
-        if (result.detections().isEmpty()) return null
+                // Get first face bounding box
+                val face = result.detections()[0].boundingBox()
+                val left = 0.coerceAtLeast(face.left.toInt())
+                val top = 0.coerceAtLeast(face.top.toInt())
+                val right = workingBitmap.width.coerceAtMost(face.right.toInt())
+                val bottom = workingBitmap.height.coerceAtMost(face.bottom.toInt())
+                val width = right - left
+                val height = bottom - top
 
-        // Get the first face bounding box
-        val face = result.detections()[0].boundingBox()
+                if (width <= 0 || height <= 0) {
+                    Log.e("FaceDetection", "Invalid face dimensions: $width x $height")
+                    return null
+                }
 
-        // Ensure bounding box is within bitmap bounds
-        val left = 0.coerceAtLeast(face.left.toInt())
-        val top = 0.coerceAtLeast(face.top.toInt())
-        val width = (bitmap.width - left).coerceAtMost(face.width().toInt())
-        val height = (bitmap.height - top).coerceAtMost(face.height().toInt())
+                // Crop face region from our working bitmap
+                if (workingBitmap.isRecycled) {
+                    Log.e("FaceDetection", "Working bitmap was recycled prematurely")
+                    return null
+                }
 
-        // Crop the face from the bitmap
-        return if (width > 0 && height > 0) {
-            Bitmap.createBitmap(bitmap, left, top, width, height)
-        } else {
-            null
+                return Bitmap.createBitmap(workingBitmap, left, top, width, height).also {
+                    Log.d("FaceDetection", "Cropped face: ${it.width}x${it.height}")
+                }
+            } finally {
+                mpImage.close()
+                mpBitmap.recycle() // Recycle the MediaPipe-specific bitmap
+            }
+        } finally {
+            faceDetector.close()
         }
     } catch (e: Exception) {
-        Log.e("FaceDetection", "Error detecting face", e)
+        Log.e("FaceDetection", "Error in face detection", e)
         return null
+    } finally {
+        // Always clean up our working copy
+        if (!workingBitmap.isRecycled) {
+            workingBitmap.recycle()
+        }
+    }
+}
+
+
+fun saveBitmapToFile(context: Context, bitmap: Bitmap, fileName: String) {
+    Log.d("hereeeeeeeeee=========","entered bitmap saving function")
+    // Get your external files directory in a "debug" subfolder.
+    val debugDir = File(context.getExternalFilesDir(null), "debug")
+    if (!debugDir.exists()) {
+        debugDir.mkdirs()
+    }
+    val file = File(debugDir, fileName)
+    try {
+        FileOutputStream(file).use { out ->
+            // Save as PNG with full quality
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+        Log.d("DEBUG", "Bitmap saved to: ${file.absolutePath}")
+    } catch (e: Exception) {
+        Log.e("DEBUG", "Error saving bitmap", e)
     }
 }
 

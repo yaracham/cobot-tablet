@@ -1,7 +1,9 @@
 [versions]
 agp = "8.5.0"
 cameraCoreVersion = "1.4.2"
+googleTasksVision = "0.10.14"
 gradle = "14.0.2"
+gradleDownloadTask = "5.0.0"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -32,6 +34,7 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCoreVersion" }
 gradle = { module = "com.chaquo.python:gradle", version.ref = "gradle" }
+gradle-download-task = { module = "de.undercouch:gradle-download-task", version.ref = "gradleDownloadTask" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -49,6 +52,7 @@ pose = { module = "com.google.mediapipe:pose", version.ref = "pose" }
 tasks-core = { module = "com.google.mediapipe:tasks-core", version.ref = "tasksCore" }
 tasks-vision = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVision" }
 tasks-vision-v01010 = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVisionVersion" }
+tasks-vision-v01014 = { module = "com.google.mediapipe:tasks-vision", version.ref = "googleTasksVision" }
 tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLite" }
 tensorflow-lite-gpu = { module = "org.tensorflow:tensorflow-lite-gpu", version.ref = "tensorflowLiteGpu" }
 tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }
