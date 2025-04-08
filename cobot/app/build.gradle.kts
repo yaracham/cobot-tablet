@@ -1,11 +1,12 @@
 import org.apache.tools.ant.util.JavaEnvUtils.VERSION_1_8
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.chaquo.python")
-}
-
+    alias(libs.plugins.jetbrains.kotlin.android)}
+//    id("de.undercouch.download") version "5.0.0" }
+//repositories {
+//    google()
+//    mavenCentral()
+//}
 android {
     namespace = "com.example.cobot"
     compileSdk = 34
@@ -26,12 +27,6 @@ android {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
     }
-    sourceSets {
-        getByName("main") {
-            assets.srcDirs("assets") // Change this to match your actual path
-        }
-    }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -61,7 +56,19 @@ android {
     }
     buildToolsVersion = "34.0.0"
 
+
 }
+
+//val assetDir = layout.projectDirectory.dir("src/main/assets")
+//
+//tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadModelFile") {
+//    src("https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite")
+//    dest(assetDir.file("face_detection_short_range.tflite"))
+//    overwrite(false)
+//}
+//tasks.named("preBuild") {
+//    dependsOn("downloadModelFile")
+//}
 
 dependencies {
 
@@ -76,6 +83,7 @@ dependencies {
 //    implementation(libs.litert)
     implementation(libs.play.services.mlkit.face.detection)
     implementation(libs.firebase.crashlytics.buildtools)
+//    implementation(libs.litert.gpu)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,6 +95,14 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
-    implementation(libs.tensorflow.lite.v2120)
+
     implementation(libs.tasks.vision)
+    implementation (libs.tensorflow.lite.v2120)
+    implementation (libs.tensorflow.lite.gpu)
+    implementation (libs.tensorflow.lite.support)
+    implementation (libs.tasks.vision.v01014)
+
+    implementation ("com.google.mlkit:object-detection:17.0.2")
+
+    implementation (libs.tasks.core)
 }
