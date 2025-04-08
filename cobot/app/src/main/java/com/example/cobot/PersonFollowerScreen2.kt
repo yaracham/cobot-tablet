@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.graphics.Matrix
 import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.YuvImage
 import android.media.Image
 import android.util.Log
@@ -20,6 +21,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.room.util.copy
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
@@ -64,6 +70,8 @@ fun PersonFollowingScreen2() {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var detectedPosition by remember { mutableStateOf("Detecting...") }
+    var boundingBox by remember { mutableStateOf<RectF?>(null) }
+    var poseLandmarks by remember { mutableStateOf<List<SimpleLandmark>>(emptyList()) }
 
     // Create an executor for background tasks
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
@@ -80,6 +88,8 @@ fun PersonFollowingScreen2() {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+
+
         // Camera preview
         CameraPreview(
             modifier = Modifier.fillMaxSize(),
@@ -88,8 +98,39 @@ fun PersonFollowingScreen2() {
             poseLandmarker = poseLandmarker,
             onPositionDetected = { position ->
                 detectedPosition = position
-            }
+            },
+            onBoundingBoxUpdated = { box -> boundingBox = box },
+            onLandmarksUpdated = { landmarks -> poseLandmarks = landmarks }
+
+
         )
+        Canvas(modifier = Modifier
+            .fillMaxSize()
+            .align(Alignment.Center)
+        ) {
+            boundingBox?.let { box ->
+                drawRect(
+                    color = Color.Red,
+                    topLeft = Offset(box.left * size.width, box.top * size.height),
+                    size = Size(
+                        (box.right - box.left) * size.width,
+                        (box.bottom - box.top) * size.height
+                    ),
+                    style = Stroke(width = 4f)
+                )
+                poseLandmarks?.forEach { landmark ->
+                    drawCircle(
+                        color = Color.Green,
+                        radius = 6f,
+                        center = Offset(
+                            x = landmark.x * size.width,
+                            y = landmark.y * size.height
+                        )
+                    )
+                }
+
+            }
+        }
         // Animated eyes overlay
         Box(
             modifier = Modifier
@@ -135,7 +176,10 @@ fun CameraPreview(
     lifecycleOwner: LifecycleOwner,
     cameraExecutor: ExecutorService,
     poseLandmarker: PoseLandmarker?,
-    onPositionDetected: (String) -> Unit
+    onPositionDetected: (String) -> Unit,
+    onBoundingBoxUpdated: (RectF?) -> Unit,
+    onLandmarksUpdated: (List<SimpleLandmark>) -> Unit
+
 ) {
     val context = LocalContext.current
 
@@ -162,7 +206,7 @@ fun CameraPreview(
                     .build()
                     .also {
                         it.setAnalyzer(cameraExecutor) { imageProxy ->
-                            processImageProxy(imageProxy, poseLandmarker, onPositionDetected)
+                            processImageProxy(imageProxy, poseLandmarker, onPositionDetected, onBoundingBoxUpdated,onLandmarksUpdated)
                         }
                     }
 
@@ -214,7 +258,10 @@ private fun setupPoseLandmarker(context: Context): PoseLandmarker? {
 private fun processImageProxy(
     imageProxy: ImageProxy,
     poseLandmarker: PoseLandmarker?,
-    onPositionDetected: (String) -> Unit
+    onPositionDetected: (String) -> Unit,
+    onBoundingBoxUpdated: (RectF?) -> Unit,
+    onLandmarksUpdated: (List<SimpleLandmark>) -> Unit
+
 ) {
     imageProxy.use { proxy ->
         val mediaImage = proxy.image ?: return@use
@@ -230,32 +277,112 @@ private fun processImageProxy(
             // Process the image with MediaPipe
             poseLandmarker?.let { detector ->
                 val result = detector.detect(mpImage)
-                determinePosition(result, onPositionDetected)
+
+
+                val flippedLandmarks = result.landmarks()[0].map {
+                    SimpleLandmark(x = it.x(), y = it.y(), z = it.z())
+                }
+                onLandmarksUpdated(flippedLandmarks)
+                determinePositionFromLandmarks(flippedLandmarks, onPositionDetected)
+                val box = getBoundingBoxFromLandmarks(flippedLandmarks)
+                onBoundingBoxUpdated(box)
+
+                onBoundingBoxUpdated(box)
             }
+
+
         } catch (e: Exception) {
             Log.e(TAG, "Error processing image: ${e.message}")
         }
     }
 }
-
-private fun determinePosition(
-    result: PoseLandmarkerResult,
+data class SimpleLandmark(val x: Float, val y: Float, val z: Float)
+private fun determinePositionFromLandmarks(
+    landmarks: List<SimpleLandmark>,
     onPositionDetected: (String) -> Unit
 ) {
-    if (result.landmarks().isNotEmpty()) {
-        // Get nose landmark (typically index 0)
-        val nose = result.landmarks()[0][0]
-        val noseX = nose.x()
+    val leftShoulder = landmarks.getOrNull(11)
+    val rightShoulder = landmarks.getOrNull(12)
 
-        // Determine position based on nose X coordinate
-        val position = when {
-            noseX < 0.4f -> "LEFT"
-            noseX > 0.6f -> "RIGHT"
-            else -> "CENTER"
-        }
-
-        onPositionDetected(position)
+    if (leftShoulder == null || rightShoulder == null) {
+        onPositionDetected("Not visible")
+        return
     }
+
+    val centerX = (leftShoulder.x + rightShoulder.x) / 2f
+
+    val position = when {
+        centerX < 0.4f -> "LEFT"
+        centerX > 0.6f -> "RIGHT"
+        else -> "CENTER"
+    }
+
+    onPositionDetected(position)
+}
+
+//private fun getBoundingBox(result: PoseLandmarkerResult): RectF? {
+//    if (result.landmarks().isEmpty()) return null
+//
+//    val original = result.landmarks()[0]
+//
+//    // Flip X for front camera mirror
+//    val landmarks = original.map {
+//        SimpleLandmark(
+//            x = 1f - it.x(), // flip X axis
+//            y = it.y(),
+//            z = it.z()
+//        )
+//    }
+//
+//    val minX = landmarks.minOf { it.x }
+//    val maxX = landmarks.maxOf { it.x }
+//    val minY = landmarks.minOf { it.y }
+//    val maxY = landmarks.maxOf { it.y }
+//
+//    return RectF(minX, minY, maxX, maxY)
+//}
+private fun getBoundingBoxFromLandmarks(landmarks: List<SimpleLandmark>): RectF {
+    val minX = landmarks.minOf { it.x }
+    val maxX = landmarks.maxOf { it.x }
+    val minY = landmarks.minOf { it.y }
+    val maxY = landmarks.maxOf { it.y }
+    return RectF(minX, minY, maxX, maxY)
+}
+
+
+
+
+//private fun determinePosition(
+//    result: PoseLandmarkerResult,
+//    onPositionDetected: (String) -> Unit
+//) {
+//    if (result.landmarks().isEmpty()) return
+//    val landmarks = result.landmarks()[0]
+//
+//    val leftShoulder = landmarks.getOrNull(11)
+//    val rightShoulder = landmarks.getOrNull(12)
+//
+//    if (leftShoulder == null || rightShoulder == null) {
+//        onPositionDetected("Not visible")
+//        return
+//    }
+//
+//    // Flip X (mirrored camera)
+//    val centerX = (leftShoulder.x() + rightShoulder.x()) / 2f
+//
+//
+//    val position = when {
+//        centerX < 0.4f -> "LEFT"
+//        centerX > 0.6f -> "RIGHT"
+//        else -> "CENTER"
+//    }
+//
+//    onPositionDetected(position)
+//}
+
+fun estimateDistance(boundingBox: RectF): Float {
+    val boxHeight = boundingBox.height()
+    return 1f / boxHeight // The taller the box → closer the person
 }
 
 // Helper functions for image processing

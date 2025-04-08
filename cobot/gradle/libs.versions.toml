@@ -26,6 +26,7 @@ playServicesMlkitFaceDetection = "17.1.0"
 firebaseCrashlyticsBuildtools = "3.0.3"
 tensorflowLiteVersion = "2.12.0"
 litertGpu = "1.2.0"
+roomKtx = "2.6.1"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCoreVersion" }
@@ -63,6 +64,7 @@ tensorflow-tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-l
 play-services-mlkit-face-detection = { group = "com.google.android.gms", name = "play-services-mlkit-face-detection", version.ref = "playServicesMlkitFaceDetection" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 litert-gpu = { group = "com.google.ai.edge.litert", name = "litert-gpu", version.ref = "litertGpu" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

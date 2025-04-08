@@ -83,6 +83,7 @@ dependencies {
 //    implementation(libs.litert)
     implementation(libs.play.services.mlkit.face.detection)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.room.ktx)
 //    implementation(libs.litert.gpu)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
