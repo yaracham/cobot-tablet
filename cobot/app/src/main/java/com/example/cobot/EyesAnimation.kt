@@ -28,8 +28,8 @@ fun EyesAnimation(position: String, modifier: Modifier = Modifier) {
 
     // Define the target positions based on the detected position
     val targetX = when (position) {
-        "LEFT" -> -0.3f
-        "RIGHT" -> 0.3f
+        "LEFT" -> 0.3f
+        "RIGHT" -> -0.3f
         else -> 0f // CENTER
     }
 

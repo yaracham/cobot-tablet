@@ -21,7 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.cobot.ui.theme.CobotTheme
-
+import com.example.cobot.PersonFollowingScreen2
+import com.example.cobot.PersonFollowing.PersonFollowingScreen
 class MainActivity : ComponentActivity() {
     private val CAMERA_PERMISSION_CODE = 100
 
