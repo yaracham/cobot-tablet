@@ -74,6 +74,7 @@ dependencies {
 //    implementation(libs.litert)
     implementation(libs.play.services.mlkit.face.detection)
     implementation(libs.firebase.crashlytics.buildtools)
+//    implementation(libs.litert.gpu)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,12 +88,12 @@ dependencies {
     implementation(libs.androidx.camera.view)
 
     implementation(libs.tasks.vision)
-    implementation ("org.tensorflow:tensorflow-lite:2.9.0")
-    implementation ("org.tensorflow:tensorflow-lite-gpu:2.9.0")
-    implementation ("org.tensorflow:tensorflow-lite-support:0.4.2")
+    implementation (libs.tensorflow.lite.v2120)
+    implementation (libs.tensorflow.lite.gpu)
+    implementation (libs.tensorflow.lite.support)
 
-    implementation ("com.google.mlkit:object-detection:17.0.0")
+    implementation ("com.google.mlkit:object-detection:17.0.2")
 
-    implementation ("com.google.mediapipe:tasks-vision:0.10.10")
-    implementation ("com.google.mediapipe:tasks-core:0.10.10")
+    implementation (libs.tasks.vision.v01010)
+    implementation (libs.tasks.core)
 }

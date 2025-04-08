@@ -11,14 +11,19 @@ lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
 composeBom = "2024.04.01"
 pose = "0.3.1624384634"
+tasksCore = "0.20230731"
 tasksVision = "0.20230731"
+tasksVisionVersion = "0.10.10"
 tensorflowLite = "2.9.0"
+tensorflowLiteGpu = "2.9.0"
+tensorflowLiteSupport = "0.4.2"
 tensorflowLiteTaskVision = "2.9.0"
 litert = "1.2.0"
 tensorflowLiteTaskVisionVersion = "2.12.0"
 playServicesMlkitFaceDetection = "17.1.0"
 firebaseCrashlyticsBuildtools = "3.0.3"
 tensorflowLiteVersion = "2.12.0"
+litertGpu = "1.2.0"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCoreVersion" }
@@ -41,14 +46,19 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 pose = { module = "com.google.mediapipe:pose", version.ref = "pose" }
+tasks-core = { module = "com.google.mediapipe:tasks-core", version.ref = "tasksCore" }
 tasks-vision = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVision" }
+tasks-vision-v01010 = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVisionVersion" }
 tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLite" }
+tensorflow-lite-gpu = { module = "org.tensorflow:tensorflow-lite-gpu", version.ref = "tensorflowLiteGpu" }
+tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }
 tensorflow-lite-task-vision = { module = "implementation 'org.tensorflow:tensorflow-lite-task-vision", version.ref = "tensorflowLiteTaskVision" }
 litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
 tensorflow-lite-v2120 = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLiteVersion" }
 tensorflow-tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-lite-task-vision", version.ref = "tensorflowLiteTaskVisionVersion" }
 play-services-mlkit-face-detection = { group = "com.google.android.gms", name = "play-services-mlkit-face-detection", version.ref = "playServicesMlkitFaceDetection" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+litert-gpu = { group = "com.google.ai.edge.litert", name = "litert-gpu", version.ref = "litertGpu" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
