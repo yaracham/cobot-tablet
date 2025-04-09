@@ -50,11 +50,11 @@ class MainActivity : ComponentActivity() {
                             onClick = { selectedTab = 0 },
                             text = { Text("Emotion Detection") }
                         )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            text = { Text("Person Following") }
-                        )
+//                        Tab(
+//                            selected = selectedTab == 1,
+//                            onClick = { selectedTab = 1 },
+//                            text = { Text("Person Following") }
+//                        )
                         Tab(
                             selected = selectedTab == 2,
                             onClick = { selectedTab = 2 },
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
                     when (selectedTab) {
                         0 -> LiveEmotionDetectionScreen()
-                        1 -> PersonFollowingScreen2()
+//                        1 -> PersonFollowingScreen2()
                         2 -> RobotFaceEmotionDemo()
                     }
                 }
