@@ -23,7 +23,8 @@ import androidx.core.content.ContextCompat
 import com.example.cobot.emotion_detection.LiveEmotionDetectionScreen
 import com.example.cobot.robot_face.RobotFaceEmotionDemo
 import com.example.cobot.ui.theme.CobotTheme
-
+//import com.example.cobot.PersonFollowingScreen2
+import com.example.cobot.PersonFollowing.PersonFollowingScreen
 class MainActivity : ComponentActivity() {
     private val CAMERA_PERMISSION_CODE = 100
 
@@ -50,11 +51,11 @@ class MainActivity : ComponentActivity() {
                             onClick = { selectedTab = 0 },
                             text = { Text("Emotion Detection") }
                         )
-//                        Tab(
-//                            selected = selectedTab == 1,
-//                            onClick = { selectedTab = 1 },
-//                            text = { Text("Person Following") }
-//                        )
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("Person Following") }
+                        )
                         Tab(
                             selected = selectedTab == 2,
                             onClick = { selectedTab = 2 },
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
 
                     when (selectedTab) {
                         0 -> LiveEmotionDetectionScreen()
-//                        1 -> PersonFollowingScreen2()
+                        1 -> PersonFollowingScreen()
                         2 -> RobotFaceEmotionDemo()
                     }
                 }

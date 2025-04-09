@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.AaptOptions
 import org.apache.tools.ant.util.JavaEnvUtils.VERSION_1_8
 plugins {
     alias(libs.plugins.android.application)
@@ -10,6 +11,11 @@ plugins {
 android {
     namespace = "com.example.cobot"
     compileSdk = 34
+
+    fun AaptOptions.() {
+        noCompress += "tflite"
+    }
+ androidResources
 
     defaultConfig {
         applicationId = "com.example.cobot"
@@ -57,6 +63,7 @@ android {
     buildToolsVersion = "34.0.0"
 
 
+
 }
 
 //val assetDir = layout.projectDirectory.dir("src/main/assets/models")
@@ -83,6 +90,7 @@ dependencies {
 //    implementation(libs.litert)
     implementation(libs.play.services.mlkit.face.detection)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.room.ktx)
 //    implementation(libs.litert.gpu)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
