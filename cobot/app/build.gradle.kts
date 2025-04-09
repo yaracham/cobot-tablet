@@ -59,7 +59,7 @@ android {
 
 }
 
-//val assetDir = layout.projectDirectory.dir("src/main/assets")
+//val assetDir = layout.projectDirectory.dir("src/main/assets/models")
 //
 //tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadModelFile") {
 //    src("https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite")
