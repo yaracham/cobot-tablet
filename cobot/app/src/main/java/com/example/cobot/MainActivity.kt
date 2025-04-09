@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.cobot.ui.theme.CobotTheme
-import com.example.cobot.PersonFollowingScreen2
+//import com.example.cobot.PersonFollowingScreen2
 import com.example.cobot.PersonFollowing.PersonFollowingScreen
 class MainActivity : ComponentActivity() {
     private val CAMERA_PERMISSION_CODE = 100
@@ -61,9 +61,8 @@ class MainActivity : ComponentActivity() {
                     }
 
                     when (selectedTab) {
-                        0 -> LiveEmotionDetectionScreen()
-                        1 -> PersonFollowingScreen2()
-                        2 -> YoloDetectionScreen()
+                        0 -> EmotionDetectorScreen()
+                        1 -> PersonFollowingScreen()
                     }
                 }
             }
