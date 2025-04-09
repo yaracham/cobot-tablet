@@ -20,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.cobot.emotion_detection.LiveEmotionDetectionScreen
+import com.example.cobot.robot_face.RobotFaceEmotionDemo
 import com.example.cobot.ui.theme.CobotTheme
 
 class MainActivity : ComponentActivity() {
@@ -38,7 +40,8 @@ class MainActivity : ComponentActivity() {
         checkCameraPermission()
         setContent {
             CobotTheme {
-                var selectedTab by remember { mutableIntStateOf(0) }
+                // Add tabs for switching between emotion detection and person following
+                var selectedTab by remember { mutableIntStateOf(2) }
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     TabRow(selectedTabIndex = selectedTab) {
@@ -47,22 +50,22 @@ class MainActivity : ComponentActivity() {
                             onClick = { selectedTab = 0 },
                             text = { Text("Emotion Detection") }
                         )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            text = { Text("Person Following") }
-                        )
+//                        Tab(
+//                            selected = selectedTab == 1,
+//                            onClick = { selectedTab = 1 },
+//                            text = { Text("Person Following") }
+//                        )
                         Tab(
                             selected = selectedTab == 2,
                             onClick = { selectedTab = 2 },
-                            text = { Text("YOLO Detection") }
+                            text = { Text("RobotFace") }
                         )
                     }
 
                     when (selectedTab) {
                         0 -> LiveEmotionDetectionScreen()
-                        1 -> PersonFollowingScreen2()
-                        2 -> YoloDetectionScreen()
+//                        1 -> PersonFollowingScreen2()
+                        2 -> RobotFaceEmotionDemo()
                     }
                 }
             }
