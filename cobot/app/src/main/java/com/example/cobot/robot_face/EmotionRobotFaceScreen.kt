@@ -27,10 +27,20 @@ import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
+import com.example.cobot.Bluetooth.BluetoothManager
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import android.Manifest
+import com.example.cobot.Bluetooth.BluetoothState
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun RobotFaceEmotionDemo() {
+fun RobotFaceEmotionDemo(bluetoothManager: BluetoothManager) {
+    val bluetoothState by bluetoothManager.bluetoothState
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -42,6 +52,8 @@ fun RobotFaceEmotionDemo() {
     // Initialize face landmarker
     val faceLandmarker = remember { createFaceLandmarker(context) }
     var lastNeutralTimestamp by remember { mutableStateOf<Long?>(null) }
+
+    var emotionOverride by remember { mutableStateOf<Emotion?>(null) }
 
     LaunchedEffect(detectedEmotion) {
         Log.d("EMOTION", detectedEmotion)
@@ -57,6 +69,25 @@ fun RobotFaceEmotionDemo() {
             }
         } else {
             lastNeutralTimestamp = null // reset if emotion changes
+        }
+    }
+    LaunchedEffect(Unit) {
+        bluetoothManager.getPairedDevices(context)
+        bluetoothManager.pairedDevices.collect { devices ->
+            val hcDevice = devices.find { it.name?.contains("HC-06") == true }
+            if (hcDevice != null &&
+                !bluetoothManager.bluetoothState.value.isConnected &&
+                !bluetoothManager.bluetoothState.value.isConnecting
+            ) {
+                bluetoothManager.connectToDevice(hcDevice, context)
+            }
+        }
+    }
+    LaunchedEffect(bluetoothState.isConnected) {
+        if (bluetoothState.isConnected) {
+            emotionOverride = Emotion.HAPPY
+            delay(1000) // 1 second delay
+            emotionOverride = null // go back to detected emotion
         }
     }
     // Frame processing loop
@@ -83,6 +114,33 @@ fun RobotFaceEmotionDemo() {
     ) {
         // Camera preview with zero zIndex to hide it behind the robot face
         // We still need it for emotion detection
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(16.dp)
+        ) {
+            val hasBluetoothPermission = remember {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+            Text(
+                text = when {
+                    bluetoothState.isConnecting -> "🔄 Connecting to HC-06..."
+                    bluetoothState.isConnected -> {
+                        val name = if (hasBluetoothPermission) {
+                            bluetoothState.connectedDevice?.name ?: "device"
+                        } else {
+                            "device"
+                        }
+                        "✅ Connected to $name"
+                    }
+                    else -> "❌ Not Connected"
+                },
+                color = Color.White
+            )
+        }
         Box(modifier = Modifier.zIndex(-1f)) {
             CameraPreview(
                 context = context,
@@ -105,7 +163,7 @@ fun RobotFaceEmotionDemo() {
                             // Debug log to verify content
                             Log.d("Blendshapes", faceBlendshapes.toString())
 
-                            detectedEmotion = classifyEmotionFromBlendshapes(faceBlendshapes)
+                            detectedEmotion = classifyEmotionFromBlendshapes(faceBlendshapes, debugText = mutableStateOf(""))
                             Log.d("EmotionDetection", "Detected emotion: $detectedEmotion")
                         } else {
                             detectedEmotion = "No face detected"
@@ -122,9 +180,25 @@ fun RobotFaceEmotionDemo() {
                 }
             }
         }
+        val finalEmotion = when {
+            bluetoothState.isConnecting -> Emotion.CONNECTING
+            emotionOverride != null -> emotionOverride!!
+            detectedEmotion.equals("Happy", ignoreCase = true) -> Emotion.HAPPY
+            detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED
+            detectedEmotion.equals("sleeping", ignoreCase = true) -> Emotion.SLEEPING
+            else -> Emotion.NEUTRAL
+        }
 
-        RobotFace(
-            emotion = if (detectedEmotion == "Happy") Emotion.HAPPY else if (detectedEmotion == "sleeping") Emotion.SLEEPING else if (detectedEmotion == "Surprised") Emotion.SURPRISED else Emotion.NEUTRAL,
-        )
+        RobotFace(emotion = finalEmotion)
+    }
+}
+
+fun getRobotEmotion(bluetoothState: BluetoothState, detectedEmotion: String): Emotion {
+    return when {
+        bluetoothState.isConnecting -> Emotion.CONNECTING
+        bluetoothState.isConnected -> Emotion.HAPPY
+        detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED
+        detectedEmotion.equals("sleeping", ignoreCase = true) -> Emotion.SLEEPING
+        else -> Emotion.NEUTRAL
     }
 }

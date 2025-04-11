@@ -30,6 +30,8 @@ import java.util.concurrent.Executors
 fun LiveEmotionDetectionScreen() {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val debugText = remember { mutableStateOf("") }
+
 
     // State initialization
     var detectedEmotion by remember { mutableStateOf("Detecting...") }
@@ -77,7 +79,7 @@ fun LiveEmotionDetectionScreen() {
                         // Debug log to verify content
                         Log.d("Blendshapes", faceBlendshapes.toString())
 
-                            detectedEmotion = classifyEmotionFromBlendshapes(faceBlendshapes)
+                            detectedEmotion = classifyEmotionFromBlendshapes(faceBlendshapes, debugText)
                             Log.d("EmotionDetection", "Detected emotion: $detectedEmotion")
 
                     } else {
@@ -94,10 +96,15 @@ fun LiveEmotionDetectionScreen() {
                 bitmap.recycle()
             }
         }
-
         Text(
             text = "Emotion: $detectedEmotion",
             modifier = Modifier.padding(16.dp)
         )
+        Text(
+            text = "$debugText",
+            modifier = Modifier
+                .padding(start = 16.dp, top = 80.dp)
+        )
+
     }
 }

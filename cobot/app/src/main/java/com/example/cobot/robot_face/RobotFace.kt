@@ -21,12 +21,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.drawText
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 enum class Emotion {
-    NEUTRAL, HAPPY, SLEEPING, SURPRISED
+    NEUTRAL, HAPPY, SLEEPING, SURPRISED, CONNECTING
 }
 
 @Composable
@@ -42,6 +44,7 @@ fun RobotFace(emotion: Emotion) {
             Emotion.NEUTRAL -> 0f
             Emotion.SLEEPING -> -1f
             Emotion.SURPRISED -> 2f
+            Emotion.CONNECTING ->3f
         }
     }
 
@@ -68,7 +71,7 @@ fun RobotFace(emotion: Emotion) {
     // Blinking logic (only if NEUTRAL)
     val blinkProgress = remember { Animatable(1f) } // 1f = open, 0f = fully closed
     val context = LocalContext.current
-
+    val eyeOffset = remember { Animatable(0f) }
     LaunchedEffect(emotion) {
         while (true) {
             if (emotion == Emotion.NEUTRAL) {
@@ -89,26 +92,49 @@ fun RobotFace(emotion: Emotion) {
                 delay(500L)
             }
         }
+        if (emotion == Emotion.CONNECTING) {
+            while (true) {
+                eyeOffset.animateTo(-20f, tween(300))
+                eyeOffset.animateTo(20f, tween(300))
+            }
+        } else {
+            eyeOffset.snapTo(0f)
+        }
     }
 
     Canvas(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         val centerX = size.width / 2
         val centerY = size.height / 2
 
-        drawEyes(centerX, centerY, eyeCurveProgress, blinkProgress.value, eyeScale)
+        drawEyes(centerX, centerY, eyeCurveProgress, blinkProgress.value, eyeScale, eyeOffset.value)
+
 
         if (emotion == Emotion.SLEEPING) {
             drawZzz(centerX, centerY)
         }
+        if (emotion == Emotion.CONNECTING || emotion == Emotion.HAPPY) {
+            drawContext.canvas.nativeCanvas.apply {
+                drawText(
+                    if (emotion == Emotion.HAPPY) "✅ I'm connected!" else "🔄 Connecting...",
+                    centerX - 200f,
+                    centerY + 200f,
+                    android.graphics.Paint().apply {
+                        textSize = 50f
+                        color = android.graphics.Color.CYAN
+                    }
+                )
+            }
+        }
+
     }
 }
 
-fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Float, scale: Float) {
+fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Float, scale: Float, horizontalOffset: Float = 0f) {
     val eyeSpacing = 100f
     val eyeTop = centerY - 100f
 
     for (side in listOf(-1f, 1f)) {
-        val x = centerX + side * eyeSpacing
+        val x = centerX + side * eyeSpacing + horizontalOffset
 
         when {
             curve > 1f -> {

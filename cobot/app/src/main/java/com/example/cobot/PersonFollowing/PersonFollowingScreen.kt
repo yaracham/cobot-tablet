@@ -18,17 +18,21 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cobot.Bluetooth.BluetoothManager
 import com.example.cobot.EyesAnimation
+import kotlinx.coroutines.delay
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 private const val TAG = "PersonFollowingScreen"
 
 @Composable
-fun PersonFollowingScreen() {
+fun PersonFollowingScreen(bluetoothManager: BluetoothManager) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var detectedPosition by remember { mutableStateOf("Detecting...") }
+    var lastSentCommand by remember { mutableStateOf("") }
+
     var boundingBox by remember { mutableStateOf<RectF?>(null) }
     var poseLandmarks by remember { mutableStateOf<List<SimpleLandmark>>(emptyList()) }
 
@@ -43,6 +47,20 @@ fun PersonFollowingScreen() {
             poseLandmarker?.close()
         }
     }
+    LaunchedEffect(Unit) {
+        while (true) {
+            val command = when (detectedPosition) {
+                "RIGHT" -> "RR\r\n"
+                "LEFT" -> "LL\r\n"
+                "CENTER" -> "FF\r\n"
+                else -> "SS\r\n"
+            }
+
+            bluetoothManager.sendCommand(command)
+            delay(1000) // Send every 2 seconds
+        }
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Camera preview

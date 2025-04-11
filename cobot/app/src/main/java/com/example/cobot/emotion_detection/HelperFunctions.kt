@@ -1,4 +1,4 @@
-package com.example.cobot.emotion_detection
+ package com.example.cobot.emotion_detection
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
+import androidx.compose.runtime.MutableState
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.core.BaseOptions
@@ -24,7 +25,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 
-// YUV to RGB converter helper class
+ // YUV to RGB converter helper class
 class YuvToRgbConverter(private val context: Context, private val bitmap: Bitmap) {
     private val rs = android.renderscript.RenderScript.create(context)
     private val scriptYuvToRgb = android.renderscript.ScriptIntrinsicYuvToRGB.create(rs, android.renderscript.Element.U8_4(rs))
@@ -178,8 +179,9 @@ fun processFaceWithLandmarker(faceLandmarker: FaceLandmarker?, mpImage: MPImage)
     return faceLandmarker?.detect(mpImage)
 }
 
-fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?): String {
+fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?,debugText: MutableState<String>): String {
     val blendshapes = mutableMapOf<String, Float>()
+    Log.d("Blendshapes", blendshapes.toString())
 
     // Flatten all the categories from each inner list
     blendshapeList?.forEach { categoryList ->
@@ -195,12 +197,30 @@ fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?): Strin
     val eyeWide = ((blendshapes["eyeWideLeft"] ?: 0f) + (blendshapes["eyeWideRight"] ?: 0f)) / 2
     val mouthOpen = blendshapes["jawOpen"] ?: 0f
     val cheekPuff = blendshapes["cheekPuff"] ?: 0f
+    val eyeSquint = ((blendshapes["eyeSquintLeft"] ?: 0f) + (blendshapes["eyeSquintRight"] ?: 0f)) / 2
+    val mouthPress = ((blendshapes["mouthPressLeft"] ?: 0f) + (blendshapes["mouthPressRight"] ?: 0f)) / 2
+    val angryScore = listOf(frown, browDown, eyeSquint, mouthPress).count { it > 0.1f }
+    val mouthFrown = ((blendshapes["mouthFrownLeft"] ?: 0f) + (blendshapes["mouthFrownRight"] ?: 0f)) / 2
+    val browInnerUp = blendshapes["browInnerUp"] ?: 0f
 
+    debugText.value = """
+    Smile: ${"%.2f".format(smile)}
+    Frown: ${"%.2f".format(frown)}
+    BrowDown: ${"%.2f".format(browDown)}
+    BrowUp: ${"%.2f".format(browUp)}
+    EyeWide: ${"%.2f".format(eyeWide)}
+    MouthOpen: ${"%.2f".format(mouthOpen)}
+    CheekPuff: ${"%.2f".format(cheekPuff)}
+    EyeSquint: ${"%.2f".format(eyeSquint)}
+    MouthPress: ${"%.2f".format(mouthPress)}
+    MouthFrown: ${"%.2f".format(mouthFrown)} 
+    BrownInnerUp: ${"%.2f".format(browInnerUp)} 
+    """.trimIndent()
     return when {
         smile > 0.3f  -> "Happy"
-        frown > 0.2f && browDown > 0.3f -> "Angry"
-        eyeWide > 0.3f && mouthOpen > 0.3f && browUp > 0.3f -> "Surprised"
-        frown > 0.3f && browUp < 0.1f -> "Sad"
+        eyeSquint >=0.2f  -> "Angry"
+        mouthOpen > 0.2f || eyeWide >0.2f-> "Surprised"
+        mouthFrown > 0.2f || browInnerUp > 0.9f -> "Sad"
         else -> "Neutral"
     }
 }
