@@ -214,13 +214,13 @@ fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?,debugTe
     EyeSquint: ${"%.2f".format(eyeSquint)}
     MouthPress: ${"%.2f".format(mouthPress)}
     MouthFrown: ${"%.2f".format(mouthFrown)} 
-    BrownInnerUp: ${"%.2f".format(browInnerUp)} 
+    BrowInnerUp: ${"%.2f".format(browInnerUp)} 
     """.trimIndent()
     return when {
         smile > 0.3f  -> "Happy"
         eyeSquint >=0.2f  -> "Angry"
         mouthOpen > 0.2f || eyeWide >0.2f-> "Surprised"
-        mouthFrown > 0.2f || browInnerUp > 0.9f -> "Sad"
+        mouthFrown > 0.2f || browInnerUp > 0.7f -> "Sad"
         else -> "Neutral"
     }
 }

@@ -186,6 +186,9 @@ fun RobotFaceEmotionDemo(bluetoothManager: BluetoothManager) {
             detectedEmotion.equals("Happy", ignoreCase = true) -> Emotion.HAPPY
             detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED
             detectedEmotion.equals("sleeping", ignoreCase = true) -> Emotion.SLEEPING
+            detectedEmotion.equals("Angry", ignoreCase = true) -> Emotion.ANGRY
+            detectedEmotion.equals("Sad", ignoreCase = true) -> Emotion.SAD
+
             else -> Emotion.NEUTRAL
         }
 
