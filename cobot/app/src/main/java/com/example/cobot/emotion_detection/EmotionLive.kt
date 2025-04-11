@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import com.example.cobot.Bluetooth.BluetoothManager
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
 import kotlinx.coroutines.delay
@@ -27,10 +28,11 @@ import java.util.concurrent.Executors
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun LiveEmotionDetectionScreen() {
+fun LiveEmotionDetectionScreen(bluetoothManager: BluetoothManager) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val debugText = remember { mutableStateOf("") }
+    var lastEmotionSent by remember { mutableStateOf("") }
 
 
     // State initialization
@@ -40,6 +42,12 @@ fun LiveEmotionDetectionScreen() {
 
     // Initialize face landmarker
     val faceLandmarker = remember { createFaceLandmarker(context) }
+    val emotionCommandMap = mapOf(
+        "Happy" to "HA\r\n",
+        "Angry" to "AN\r\n",
+        "Sad" to "SD\r\n",
+        "Surprised" to "SP\r\n"
+    )
 
     // Frame processing loop
     LaunchedEffect(Unit) {
@@ -72,6 +80,13 @@ fun LiveEmotionDetectionScreen() {
 
                 // Classify emotion based on blendshapes
                 landmarkerResult?.let { result ->
+                    val command = emotionCommandMap[detectedEmotion]
+                    if (command != null && detectedEmotion != lastEmotionSent) {
+                        bluetoothManager.sendCommand(command)
+                        lastEmotionSent = detectedEmotion
+                        Log.d("BluetoothCommand", "Sent: $command")
+                    }
+
                     val faceBlendshapes: List<List<Category>>? = result.faceBlendshapes().orElse(null)
 
                     if (faceBlendshapes != null) {

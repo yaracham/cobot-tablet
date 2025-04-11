@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     when (selectedTab) {
-                        0 -> LiveEmotionDetectionScreen()
+                        0 -> LiveEmotionDetectionScreen(bluetoothManager)
                         1 -> PersonFollowingScreen(bluetoothManager)
                         2 -> RobotFaceEmotionDemo(bluetoothManager)
                     }

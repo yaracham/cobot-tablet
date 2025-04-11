@@ -73,4 +73,11 @@ object BluetoothCommands {
         // Auto mode OFF
         const val AUTO_OFF = "AF\r\n"
     }
+
+    object Emotion {
+        const val HAPPY = "HA\r\n"
+        const val ANGRY ="AN\r\n"
+        const val SAD = "SD\r\n"
+        const val SURPRISED = "SP\r\n"
+    }
 }
