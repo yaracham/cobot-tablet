@@ -57,7 +57,7 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
     buildToolsVersion = "34.0.0"
@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.play.services.mlkit.face.detection)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.identity.jvm)
 //    implementation(libs.litert.gpu)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -113,4 +114,7 @@ dependencies {
     implementation ("com.google.mlkit:object-detection:17.0.2")
 
     implementation (libs.tasks.core)
+
+
+
 }
