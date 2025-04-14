@@ -1,7 +1,6 @@
 package com.example.cobot
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -27,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.cobot.Bluetooth.BluetoothManager as MyBluetoothManager
+import com.example.cobot.bluetooth.BluetoothManager as MyBluetoothManager
 import com.example.cobot.emotion_detection.LiveEmotionDetectionScreen
 import com.example.cobot.PersonFollowing.PersonFollowingScreen
 import com.example.cobot.bluetooth.HM10BluetoothHelper

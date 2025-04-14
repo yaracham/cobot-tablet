@@ -1,11 +1,10 @@
-package com.example.cobot.Bluetooth
+package com.example.cobot.bluetooth
 
 import android.Manifest
 import android.bluetooth.*
 import android.bluetooth.le.*
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.ParcelUuid
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat

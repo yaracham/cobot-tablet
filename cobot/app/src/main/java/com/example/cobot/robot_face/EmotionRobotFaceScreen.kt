@@ -31,11 +31,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
-import com.example.cobot.Bluetooth.BluetoothManager
+import com.example.cobot.bluetooth.BluetoothManager
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import android.Manifest
-import com.example.cobot.Bluetooth.BluetoothState
+import com.example.cobot.bluetooth.BluetoothState
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
@@ -71,23 +71,37 @@ fun RobotFaceEmotionDemo(bluetoothManager: BluetoothManager) {
             lastNeutralTimestamp = null // reset if emotion changes
         }
     }
+//    LaunchedEffect(Unit) {
+//        bluetoothManager.getPairedDevices(context)
+//        bluetoothManager.pairedDevices.collect { devices ->
+//            val hcDevice = devices.find { it.name?.contains("HC-06") == true }
+//            if (hcDevice != null &&
+//                !bluetoothManager.bluetoothState.value.isConnected &&
+//                !bluetoothManager.bluetoothState.value.isConnecting
+//            ) {
+//                bluetoothManager.connectToDevice(hcDevice, context)
+//            }
+//        }
+//    }
+//    LaunchedEffect(bluetoothState.isConnected) {
+//        if (bluetoothState.isConnected) {
+//            emotionOverride = Emotion.HAPPY
+//            delay(1000) // 1 second delay
+//            emotionOverride = null // go back to detected emotion
+//        }
+//    }
     LaunchedEffect(Unit) {
-        bluetoothManager.getPairedDevices(context)
-        bluetoothManager.pairedDevices.collect { devices ->
-            val hcDevice = devices.find { it.name?.contains("HC-06") == true }
-            if (hcDevice != null &&
-                !bluetoothManager.bluetoothState.value.isConnected &&
-                !bluetoothManager.bluetoothState.value.isConnecting
-            ) {
-                bluetoothManager.connectToDevice(hcDevice, context)
+        while (true) {
+            val command = when (detectedEmotion) {
+                "Happy" -> "EA\r\n"
+                "Sad" -> "ES\r\n"
+                "Surprised" -> "EU\r\n"
+                "Angry" -> "EY\r\n"
+                else -> ""
             }
-        }
-    }
-    LaunchedEffect(bluetoothState.isConnected) {
-        if (bluetoothState.isConnected) {
-            emotionOverride = Emotion.HAPPY
-            delay(1000) // 1 second delay
-            emotionOverride = null // go back to detected emotion
+
+            bluetoothManager.sendCommand(command)
+            delay(5000) // Send every 5 seconds
         }
     }
     // Frame processing loop

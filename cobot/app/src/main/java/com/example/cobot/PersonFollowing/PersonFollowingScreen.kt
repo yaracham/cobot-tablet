@@ -1,6 +1,5 @@
 package com.example.cobot.PersonFollowing
 
-import android.content.Context
 import android.graphics.RectF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -18,10 +17,9 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cobot.Bluetooth.BluetoothManager
+import com.example.cobot.bluetooth.BluetoothManager
 import com.example.cobot.EyesAnimation
 import kotlinx.coroutines.delay
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 private const val TAG = "PersonFollowingScreen"

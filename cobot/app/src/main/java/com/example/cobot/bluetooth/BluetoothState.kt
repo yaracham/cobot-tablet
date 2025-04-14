@@ -1,4 +1,4 @@
-package com.example.cobot.Bluetooth
+package com.example.cobot.bluetooth
 
 
 import android.bluetooth.BluetoothDevice
