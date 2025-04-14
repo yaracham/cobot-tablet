@@ -19,7 +19,7 @@ class HM10BluetoothHelper(private val context: Context) {
     var connectionStatus = mutableStateOf("Not connected")
 
     private val bluetoothAdapter: BluetoothAdapter? =
-        (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+        (context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager).adapter
 
     private val serviceUuid = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")
     private val characteristicUuid = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
