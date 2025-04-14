@@ -143,34 +143,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN])
-    fun connectToHM10(macAddress: String) {
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
-        val uuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-
-        val socket = device.createRfcommSocketToServiceRecord(uuid)
-
-        Thread {
-            try {
-                bluetoothAdapter.cancelDiscovery()
-                socket.connect()
-                Log.d("Bluetooth", "Connected to HM-10/1C")
-
-                val outputStream = socket.outputStream
-                val inputStream = socket.inputStream
-
-                outputStream.write("Hello from Android\n".toByteArray())
-
-                val buffer = ByteArray(1024)
-                val bytes = inputStream.read(buffer)
-                val receivedMessage = String(buffer, 0, bytes)
-                Log.d("Bluetooth", "Received: $receivedMessage")
-
-            } catch (e: Exception) {
-                Log.e("Bluetooth", "Connection failed", e)
-            }
-        }.start()
-    }
 }
