@@ -204,7 +204,7 @@ fun DrawScope.drawAngryFace(centerX: Float, centerY: Float) {
 }
 fun DrawScope.drawSadFace(centerX: Float, centerY: Float) {
     val eyeLength = 90f
-    val eyeOffsetX = 100f
+    val eyeOffsetX = 130f
     val eyeTop = centerY - 100f
 
     // Left brow (outer down, inner up)
@@ -228,8 +228,9 @@ fun DrawScope.drawSadFace(centerX: Float, centerY: Float) {
 
 
 fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Float, scale: Float, horizontalOffset: Float = 0f) {
-    val eyeSpacing = 100f
+    val eyeSpacing = 120f
     val eyeTop = centerY - 100f
+    val radius = min(size.width, size.height) / 2.2f
 
     for (side in listOf(-1f, 1f)) {
         val x = centerX + side * eyeSpacing + horizontalOffset
@@ -250,6 +251,17 @@ fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Floa
                     quadraticBezierTo(x, eyeTop - 40f * curve, x + 40f, eyeTop + 50f)
                 }
                 drawPath(path = path, color = Color.Cyan, style = Stroke(width = 10f, cap = StrokeCap.Round))
+                    val mouthWidth = radius * 0.3f
+                    val mouthY = centerY + radius * 0.4f
+                    val mouth = Path().apply {
+                        moveTo(centerX - mouthWidth / 2, mouthY)
+                        quadraticBezierTo(centerX, mouthY + 20f, centerX + mouthWidth / 2, mouthY)
+                    }
+                    drawPath(
+                        path = mouth,
+                        color = Color.Cyan,
+                        style = Stroke(width = 8f, cap = StrokeCap.Round)
+                    )
             }
             curve < 0f -> {
                 val path = Path().apply {
@@ -259,15 +271,15 @@ fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Floa
                 drawPath(path = path, color = Color.Cyan, style = Stroke(width = 10f, cap = StrokeCap.Round))
             }
             else -> {
-                val fullHeight = 140f
+                val fullHeight = 220f
                 val visibleHeight = fullHeight * blink
                 val topOffset = eyeTop + (fullHeight - visibleHeight) / 2
 
                 drawRoundRect(
                     color = Color.Cyan,
                     topLeft = Offset(x - 20f, topOffset),
-                    size = Size(60f, visibleHeight),
-                    cornerRadius = CornerRadius(30f, 30f)
+                    size = Size(80f, visibleHeight),
+                    cornerRadius = CornerRadius(50f, 50f)
                 )
             }
         }
