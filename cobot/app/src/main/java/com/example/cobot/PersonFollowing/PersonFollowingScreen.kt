@@ -1,6 +1,7 @@
 package com.example.cobot.PersonFollowing
 
 import android.graphics.RectF
+import android.os.Build
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,13 +20,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cobot.bluetooth.BluetoothManager
 import com.example.cobot.EyesAnimation
+import com.example.cobot.bluetooth.HM10BluetoothHelper
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 
 private const val TAG = "PersonFollowingScreen"
 
 @Composable
-fun PersonFollowingScreen(bluetoothManager: BluetoothManager) {
+fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var detectedPosition by remember { mutableStateOf("Detecting...") }
@@ -54,7 +56,9 @@ fun PersonFollowingScreen(bluetoothManager: BluetoothManager) {
                 else -> "SS\r\n"
             }
 
-            bluetoothManager.sendCommand(command)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                hM10BluetoothHelper.sendMessage(command)
+            }
             delay(1000) // Send every 2 seconds
         }
     }

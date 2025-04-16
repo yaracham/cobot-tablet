@@ -40,8 +40,8 @@ fun determinePositionFromLandmarks(
 
     val centerX = (leftShoulder.x + rightShoulder.x) / 2f
     val position = when {
-        centerX < 0.4f -> "RIGHT"
-        centerX > 0.6f -> "LEFT"
+        centerX < 0.35f -> "RIGHT"
+        centerX > 0.65f -> "LEFT"
         else -> "CENTER"
     }
     onPositionDetected(position)

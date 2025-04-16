@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import com.example.cobot.bluetooth.BluetoothManager
+import com.example.cobot.bluetooth.HM10BluetoothHelper
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
 import kotlinx.coroutines.delay
@@ -28,7 +29,7 @@ import java.util.concurrent.Executors
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun LiveEmotionDetectionScreen(bluetoothManager: BluetoothManager) {
+fun LiveEmotionDetectionScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val debugText = remember { mutableStateOf("") }
@@ -82,7 +83,9 @@ fun LiveEmotionDetectionScreen(bluetoothManager: BluetoothManager) {
                 landmarkerResult?.let { result ->
                     val command = emotionCommandMap[detectedEmotion]
                     if (command != null && detectedEmotion != lastEmotionSent) {
-                        bluetoothManager.sendCommand(command)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            hM10BluetoothHelper.sendMessage(command)
+                        }
                         lastEmotionSent = detectedEmotion
                         Log.d("BluetoothCommand", "Sent: $command")
                     }

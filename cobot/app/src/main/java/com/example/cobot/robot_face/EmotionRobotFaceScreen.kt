@@ -36,11 +36,12 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import android.Manifest
 import com.example.cobot.bluetooth.BluetoothState
+import com.example.cobot.bluetooth.HM10BluetoothHelper
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun RobotFaceEmotionDemo(bluetoothManager: BluetoothManager) {
-    val bluetoothState by bluetoothManager.bluetoothState
+fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
+//    val bluetoothState by bluetoothManager.bluetoothState
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -100,7 +101,7 @@ fun RobotFaceEmotionDemo(bluetoothManager: BluetoothManager) {
                 else -> ""
             }
 
-            bluetoothManager.sendCommand(command)
+//            bluetoothManager.sendCommand(command)
             delay(5000) // Send every 5 seconds
         }
     }
@@ -139,21 +140,21 @@ fun RobotFaceEmotionDemo(bluetoothManager: BluetoothManager) {
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) == PackageManager.PERMISSION_GRANTED
             }
-            Text(
-                text = when {
-                    bluetoothState.isConnecting -> "🔄 Connecting to HC-06..."
-                    bluetoothState.isConnected -> {
-                        val name = if (hasBluetoothPermission) {
-                            bluetoothState.connectedDevice?.name ?: "device"
-                        } else {
-                            "device"
-                        }
-                        "✅ Connected to $name"
-                    }
-                    else -> "❌ Not Connected"
-                },
-                color = Color.White
-            )
+//            Text(
+//                text = when {
+//                    bluetoothState.isConnecting -> "🔄 Connecting to HC-06..."
+//                    bluetoothState.isConnected -> {
+//                        val name = if (hasBluetoothPermission) {
+//                            bluetoothState.connectedDevice?.name ?: "device"
+//                        } else {
+//                            "device"
+//                        }
+//                        "✅ Connected to $name"
+//                    }
+//                    else -> "❌ Not Connected"
+//                },
+//                color = Color.White
+//            )
         }
         Box(modifier = Modifier.zIndex(-1f)) {
             CameraPreview(
@@ -195,7 +196,7 @@ fun RobotFaceEmotionDemo(bluetoothManager: BluetoothManager) {
             }
         }
         val finalEmotion = when {
-            bluetoothState.isConnecting -> Emotion.CONNECTING
+//            bluetoothState.isConnecting -> Emotion.CONNECTING
             emotionOverride != null -> emotionOverride!!
             detectedEmotion.equals("Happy", ignoreCase = true) -> Emotion.HAPPY
             detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED

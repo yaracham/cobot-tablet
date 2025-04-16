@@ -37,7 +37,7 @@ import java.util.UUID
 class MainActivity : ComponentActivity() {
 
     private val CAMERA_PERMISSION_CODE = 100
-    private val bluetoothManager = MyBluetoothManager()
+//    private val bluetoothManager = MyBluetoothManager()
     private lateinit var hm10Helper: HM10BluetoothHelper
 
     private fun checkCameraPermission() {
@@ -130,9 +130,9 @@ class MainActivity : ComponentActivity() {
                     }
 
                     when (selectedTab) {
-                        0 -> LiveEmotionDetectionScreen(bluetoothManager)
-                        1 -> PersonFollowingScreen(bluetoothManager)
-                        2 -> RobotFaceEmotionDemo(bluetoothManager)
+                        0 -> LiveEmotionDetectionScreen(hm10Helper)
+                        1 -> PersonFollowingScreen(hm10Helper)
+                        2 -> RobotFaceEmotionDemo(hm10Helper)
                         3 -> MainScreen(hm10Helper)
                     }
 
