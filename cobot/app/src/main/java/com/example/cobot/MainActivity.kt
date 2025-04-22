@@ -103,8 +103,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             CobotTheme {
                 var selectedTab by remember { mutableStateOf("AOF") }
-
-
                 val context = LocalContext.current
                 val bluetoothAdapter: BluetoothAdapter? =
                     remember {
@@ -114,6 +112,12 @@ class MainActivity : ComponentActivity() {
                 if (bluetoothAdapter?.isEnabled == false) {
                     val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                     startActivityForResult(enableBtIntent, 1)
+                }
+                LaunchedEffect(hm10Helper.receivedMessage.value) {
+                    when {
+                        hm10Helper.receivedMessage.value.contains("AOF") -> selectedTab = "AOF" // Follow tab
+                        hm10Helper.receivedMessage.value.contains("AON") -> selectedTab = "AON" // Emotion tab
+                    }
                 }
 
                 Column(
