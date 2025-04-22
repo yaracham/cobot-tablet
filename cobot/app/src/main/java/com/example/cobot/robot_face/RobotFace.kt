@@ -96,7 +96,7 @@ fun RobotFace(emotion: Emotion) {
         }
     }
 
-    Canvas(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    Canvas(modifier = Modifier.fillMaxSize().background(Color.White)) {
         val centerX = size.width / 2
         val centerY = size.height / 2
 
@@ -109,19 +109,6 @@ fun RobotFace(emotion: Emotion) {
         if (emotion == Emotion.SLEEPING) {
             drawZzz(centerX, centerY)
         }
-//        if (emotion == Emotion.HAPPY) {
-//            drawContext.canvas.nativeCanvas.apply {
-//                drawText(
-////                    if (emotion == Emotion.CONNECTING) "✅ I'm connected!" else "🔄 Connecting...",
-//                    centerX - 200f,
-//                    centerY + 200f,
-//                    android.graphics.Paint().apply {
-//                        textSize = 50f
-//                        color = android.graphics.Color.CYAN
-//                    }
-//                )
-//            }
-//        }
     }
 }
 
@@ -144,7 +131,7 @@ fun DrawScope.drawAngryFace(centerX: Float, centerY: Float) {
         )
     }) {
         drawArc(
-            color = Color.Cyan,
+            color = Color.Blue,
             startAngle = 180f,
             sweepAngle = 180f,
             useCenter = true, // This fills the shape
@@ -162,7 +149,7 @@ fun DrawScope.drawAngryFace(centerX: Float, centerY: Float) {
         )
     }) {
         drawArc(
-            color = Color.Cyan,
+            color = Color.Blue,
             startAngle = 180f,
             sweepAngle = 180f,
             useCenter = true, // This fills the shape
@@ -209,7 +196,7 @@ fun DrawScope.drawSadFace(centerX: Float, centerY: Float) {
 
     // Left brow (outer down, inner up)
     drawLine(
-        color = Color.Cyan,
+        color = Color.Blue,
         start = Offset(centerX - eyeOffsetX - eyeLength / 2, eyeTop + 30f), // outer (lower)
         end = Offset(centerX - eyeOffsetX + eyeLength / 2, eyeTop),         // inner (higher)
         strokeWidth = 18f,
@@ -218,7 +205,7 @@ fun DrawScope.drawSadFace(centerX: Float, centerY: Float) {
 
     // Right brow (inner up, outer down)
     drawLine(
-        color = Color.Cyan,
+        color = Color.Blue,
         start = Offset(centerX + eyeOffsetX - eyeLength / 2, eyeTop),        // inner (higher)
         end = Offset(centerX + eyeOffsetX + eyeLength / 2, eyeTop + 30f),    // outer (lower)
         strokeWidth = 18f,
@@ -238,7 +225,7 @@ fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Floa
         when {
             curve > 1f -> {
                 drawCircle(
-                    color = Color.Cyan,
+                    color = Color.Blue,
                     radius = 40f * scale,
                     center = Offset(x, eyeTop + 50f),
                     style = Fill
@@ -250,7 +237,7 @@ fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Floa
                     moveTo(x - 40f, eyeTop + 50f)
                     quadraticBezierTo(x, eyeTop - 40f * curve, x + 40f, eyeTop + 50f)
                 }
-                drawPath(path = path, color = Color.Cyan, style = Stroke(width = 10f, cap = StrokeCap.Round))
+                drawPath(path = path, color = Color.Blue, style = Stroke(width = 10f, cap = StrokeCap.Round))
                     val mouthWidth = radius * 0.3f
                     val mouthY = centerY + radius * 0.4f
                     val mouth = Path().apply {
@@ -259,7 +246,7 @@ fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Floa
                     }
                     drawPath(
                         path = mouth,
-                        color = Color.Cyan,
+                        color = Color.Blue,
                         style = Stroke(width = 8f, cap = StrokeCap.Round)
                     )
             }
@@ -268,7 +255,7 @@ fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Floa
                     moveTo(x - 40f, eyeTop + 10f)
                     quadraticBezierTo(x, eyeTop - 40f * curve, x + 40f, eyeTop + 10f)
                 }
-                drawPath(path = path, color = Color.Cyan, style = Stroke(width = 10f, cap = StrokeCap.Round))
+                drawPath(path = path, color = Color.Blue, style = Stroke(width = 10f, cap = StrokeCap.Round))
             }
             else -> {
                 val fullHeight = 220f
@@ -276,7 +263,7 @@ fun DrawScope.drawEyes(centerX: Float, centerY: Float, curve: Float, blink: Floa
                 val topOffset = eyeTop + (fullHeight - visibleHeight) / 2
 
                 drawRoundRect(
-                    color = Color.Cyan,
+                    color = Color.Blue,
                     topLeft = Offset(x - 20f, topOffset),
                     size = Size(80f, visibleHeight),
                     cornerRadius = CornerRadius(50f, 50f)
@@ -300,7 +287,7 @@ fun DrawScope.drawEyebrows(centerX: Float, centerY: Float, curve: Float) {
             }
             drawPath(
                 path = eyebrowPath,
-                color = Color.Cyan,
+                color = Color.Blue,
                 style = Stroke(width = 8f, cap = StrokeCap.Round)
             )
         }
@@ -328,7 +315,7 @@ fun DrawScope.drawZ(x: Float, y: Float, size: Float) {
     }
     drawPath(
         path = path,
-        color = Color.Cyan,
+        color = Color.Blue,
         style = Stroke(width = 6f, cap = StrokeCap.Round)
     )
 }

@@ -17,7 +17,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -37,7 +41,8 @@ import java.util.UUID
 class MainActivity : ComponentActivity() {
 
     private val CAMERA_PERMISSION_CODE = 100
-//    private val bluetoothManager = MyBluetoothManager()
+
+    //    private val bluetoothManager = MyBluetoothManager()
     private lateinit var hm10Helper: HM10BluetoothHelper
 
     private fun checkCameraPermission() {
@@ -51,6 +56,7 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
+
     private fun requestAllPermissions() {
         val permissions = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -63,13 +69,14 @@ class MainActivity : ComponentActivity() {
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
         }
 
-        val launcher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-            // Log or handle permission result if needed
-        }
+        val launcher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+                // Log or handle permission result if needed
+            }
         launcher.launch(permissions.toTypedArray())
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
+    @RequiresApi(value = 31)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -78,6 +85,7 @@ class MainActivity : ComponentActivity() {
         hm10Helper = HM10BluetoothHelper(this)
         requestAllPermissions()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            hm10Helper.connectDirectly()
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
                 != PackageManager.PERMISSION_GRANTED
             ) {
@@ -94,50 +102,42 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CobotTheme {
-                var selectedTab by remember { mutableIntStateOf(2) }
-                val context = LocalContext.current
+                var selectedTab by remember { mutableStateOf("AOF") }
 
+
+                val context = LocalContext.current
                 val bluetoothAdapter: BluetoothAdapter? =
-                    (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+                    remember {
+                        (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+                    }
 
                 if (bluetoothAdapter?.isEnabled == false) {
                     val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                     startActivityForResult(enableBtIntent, 1)
                 }
 
-                Column(modifier = Modifier.fillMaxSize()) {
-                    TabRow(selectedTabIndex = selectedTab) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(WindowInsets.statusBars.asPaddingValues())
+                ) {
+                    TabRow(selectedTabIndex = if (selectedTab == "AON") 0 else 1) {
                         Tab(
-                            selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 },
+                            selected = selectedTab == "AON",
+                            onClick = { selectedTab = "AON" },
+                            text = { Text("Automated Driving") }
+                        )
+                        Tab(
+                            selected = selectedTab == "AOF",
+                            onClick = { selectedTab = "AOF" },
                             text = { Text("Emotion Detection") }
-                        )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            text = { Text("Person Following") }
-                        )
-                        Tab(
-                            selected = selectedTab == 2,
-                            onClick = { selectedTab = 2 },
-                            text = { Text("RobotFace") }
-                        )
-                        Tab(
-                            selected = selectedTab == 3,
-                            onClick = { selectedTab = 3},
-                            text = { Text("blue") }
                         )
                     }
 
                     when (selectedTab) {
-                        0 -> LiveEmotionDetectionScreen(hm10Helper)
-                        1 -> PersonFollowingScreen(hm10Helper)
-                        2 -> RobotFaceEmotionDemo(hm10Helper)
-                        3 -> MainScreen(hm10Helper)
+                        "AOF" -> RobotFaceEmotionDemo(hm10Helper)
+                        "AON" -> PersonFollowingScreen(hm10Helper)
                     }
-
-                    // ✅ Call it once for now to test connection (replace with real MAC)
-                    // LaunchedEffect(Unit) { connectToHM10("00:14:03:05:59:36") }
                 }
             }
         }

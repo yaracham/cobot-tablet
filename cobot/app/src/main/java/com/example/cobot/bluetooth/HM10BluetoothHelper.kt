@@ -17,6 +17,7 @@ class HM10BluetoothHelper(private val context: Context) {
     private var bluetoothGatt: BluetoothGatt? = null
     private val targetDeviceMacAddress = "3C:A3:08:90:7D:62" // Replace with your device's MAC
     var connectionStatus = mutableStateOf("Not connected")
+    var receivedMessage = mutableStateOf("") // State for the received message
 
     private val bluetoothAdapter: BluetoothAdapter? =
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager).adapter
@@ -61,8 +62,37 @@ class HM10BluetoothHelper(private val context: Context) {
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Log.d("BLE", "Services discovered successfully.")
+                    // Automatically start receiving messages after services are discovered
+                    startReceivingMessages()
                 } else {
                     Log.e("BLE", "Service discovery failed with status: $status")
+                }
+            }
+
+            // This callback is triggered when the characteristic value changes (new message received)
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                value: ByteArray
+            ) {
+                if (characteristic.uuid == characteristicUuid) {
+                    val message = String(value)
+                    Log.d("BLE", "Received message: $message")
+                    receivedMessage.value = message
+                }
+            }
+
+            // For older Android versions
+            @Deprecated("Deprecated in Java")
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt?,
+                characteristic: BluetoothGattCharacteristic?
+            ) {
+                if (characteristic?.uuid == characteristicUuid) {
+                    val value = characteristic?.value
+                    val message = java.lang.String(value)
+                    Log.d("BLE", "Received message: $message")
+                    receivedMessage.value = message.toString()
                 }
             }
         })
@@ -86,6 +116,39 @@ class HM10BluetoothHelper(private val context: Context) {
             Log.d("BLE", "Sent message: $message | result: $result")
         } else {
             Log.e("BLE", "Characteristic not found.")
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun startReceivingMessages() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e("BLE", "Cannot receive: BLUETOOTH_CONNECT permission not granted")
+            return
+        }
+
+        val service = bluetoothGatt?.getService(serviceUuid)
+        val characteristic = service?.getCharacteristic(characteristicUuid)
+
+        if (characteristic != null) {
+            // Enable notifications for the characteristic
+            bluetoothGatt?.setCharacteristicNotification(characteristic, true)
+
+            // Configure the descriptor to enable notifications on the remote device
+            val descriptor = characteristic.getDescriptor(
+                UUID.fromString("00002902-0000-1000-8000-00805f9b34fb") // Client Characteristic Configuration Descriptor
+            )
+
+            if (descriptor != null) {
+                descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                val success = bluetoothGatt?.writeDescriptor(descriptor)
+                Log.d("BLE", "Enabled notifications for receiving messages: $success")
+            } else {
+                Log.e("BLE", "Descriptor not found for enabling notifications")
+            }
+        } else {
+            Log.e("BLE", "Characteristic not found for receiving messages")
         }
     }
 }

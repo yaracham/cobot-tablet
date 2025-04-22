@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import com.example.cobot.bluetooth.BluetoothManager
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
@@ -44,10 +43,11 @@ fun LiveEmotionDetectionScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
     // Initialize face landmarker
     val faceLandmarker = remember { createFaceLandmarker(context) }
     val emotionCommandMap = mapOf(
-        "Happy" to "HA\r\n",
-        "Angry" to "AN\r\n",
-        "Sad" to "SD\r\n",
-        "Surprised" to "SP\r\n"
+        "Happy" to "EA\r\n",
+        "Angry" to "EY\r\n",
+        "Sad" to "ES\r\n",
+        "Surprised" to "EU\r\n"
+        // Neutral is intentionally not included
     )
 
     // Frame processing loop
@@ -81,25 +81,33 @@ fun LiveEmotionDetectionScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
 
                 // Classify emotion based on blendshapes
                 landmarkerResult?.let { result ->
-                    val command = emotionCommandMap[detectedEmotion]
-                    if (command != null && detectedEmotion != lastEmotionSent) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            hM10BluetoothHelper.sendMessage(command)
+                    // Only send command if emotion is not Neutral and has changed
+                    if (detectedEmotion != "Neutral" && detectedEmotion != lastEmotionSent) {
+                        val command = emotionCommandMap[detectedEmotion]
+                        if (command != null) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                hM10BluetoothHelper.sendMessage(command)
+                            }
+                            lastEmotionSent = detectedEmotion
+                            Log.d("BluetoothCommand", "Sent: $command")
                         }
-                        lastEmotionSent = detectedEmotion
-                        Log.d("BluetoothCommand", "Sent: $command")
                     }
 
                     val faceBlendshapes: List<List<Category>>? = result.faceBlendshapes().orElse(null)
 
                     if (faceBlendshapes != null) {
-
                         // Debug log to verify content
                         Log.d("Blendshapes", faceBlendshapes.toString())
 
-                            detectedEmotion = classifyEmotionFromBlendshapes(faceBlendshapes, debugText)
-                            Log.d("EmotionDetection", "Detected emotion: $detectedEmotion")
+                        detectedEmotion = classifyEmotionFromBlendshapes(faceBlendshapes, debugText)
+                        Log.d("EmotionDetection", "Detected emotion: $detectedEmotion")
 
+                        // If emotion changes to Neutral, update lastEmotionSent to prevent resending
+                        // the previous emotion when the same emotion is detected again
+                        if (detectedEmotion == "Neutral") {
+                            lastEmotionSent = ""
+                            Log.d("EmotionDetection", "Neutral detected - no command sent")
+                        }
                     } else {
                         detectedEmotion = "No face detected"
                     }
@@ -123,6 +131,5 @@ fun LiveEmotionDetectionScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
             modifier = Modifier
                 .padding(start = 16.dp, top = 80.dp)
         )
-
     }
 }
