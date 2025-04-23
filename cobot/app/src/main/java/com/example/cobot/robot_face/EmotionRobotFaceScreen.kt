@@ -28,20 +28,22 @@ import com.google.mediapipe.tasks.components.containers.Category
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
-import com.example.cobot.bluetooth.BluetoothManager
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
-import android.Manifest
-import com.example.cobot.bluetooth.BluetoothState
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 
+enum class Emotion {
+    NEUTRAL,
+    HAPPY,
+    SAD,
+    ANGRY,
+    SLEEPING,
+    SURPRISED,
+    CONNECTING
+}
 @RequiresApi(value = 31)
 @Composable
 fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
-//    val bluetoothState by bluetoothManager.bluetoothState
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -72,25 +74,7 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
             lastNeutralTimestamp = null // reset if emotion changes
         }
     }
-//    LaunchedEffect(Unit) {
-//        bluetoothManager.getPairedDevices(context)
-//        bluetoothManager.pairedDevices.collect { devices ->
-//            val hcDevice = devices.find { it.name?.contains("HC-06") == true }
-//            if (hcDevice != null &&
-//                !bluetoothManager.bluetoothState.value.isConnected &&
-//                !bluetoothManager.bluetoothState.value.isConnecting
-//            ) {
-//                bluetoothManager.connectToDevice(hcDevice, context)
-//            }
-//        }
-//    }
-//    LaunchedEffect(bluetoothState.isConnected) {
-//        if (bluetoothState.isConnected) {
-//            emotionOverride = Emotion.HAPPY
-//            delay(1000) // 1 second delay
-//            emotionOverride = null // go back to detected emotion
-//        }
-//    }
+
     LaunchedEffect(detectedEmotion) {
         while (true) {
             val command = when (detectedEmotion) {
@@ -182,15 +166,5 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
         }
 
         RobotFace(emotion = finalEmotion)
-    }
-}
-
-fun getRobotEmotion(bluetoothState: BluetoothState, detectedEmotion: String): Emotion {
-    return when {
-        bluetoothState.isConnecting -> Emotion.CONNECTING
-        bluetoothState.isConnected -> Emotion.HAPPY
-        detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED
-        detectedEmotion.equals("sleeping", ignoreCase = true) -> Emotion.SLEEPING
-        else -> Emotion.NEUTRAL
     }
 }

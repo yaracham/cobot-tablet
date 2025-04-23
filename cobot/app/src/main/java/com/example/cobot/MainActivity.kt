@@ -1,48 +1,29 @@
 package com.example.cobot
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.annotation.RequiresPermission
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.cobot.bluetooth.BluetoothManager as MyBluetoothManager
-import com.example.cobot.emotion_detection.LiveEmotionDetectionScreen
 import com.example.cobot.PersonFollowing.PersonFollowingScreen
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import com.example.cobot.robot_face.RobotFaceEmotionDemo
 import com.example.cobot.ui.theme.CobotTheme
-import java.util.UUID
 
 class MainActivity : ComponentActivity() {
 
     private val CAMERA_PERMISSION_CODE = 100
-
-    //    private val bluetoothManager = MyBluetoothManager()
     private lateinit var hm10Helper: HM10BluetoothHelper
 
     private fun checkCameraPermission() {
@@ -70,53 +51,30 @@ class MainActivity : ComponentActivity() {
         }
 
         val launcher =
-            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-                // Log or handle permission result if needed
-            }
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { _ -> }
         launcher.launch(permissions.toTypedArray())
     }
 
-    @RequiresApi(value = 31)
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         checkCameraPermission()
+        requestAllPermissions()
 
         hm10Helper = HM10BluetoothHelper(this)
-        requestAllPermissions()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            hm10Helper.connectDirectly()
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(
-                        Manifest.permission.BLUETOOTH_CONNECT,
-                        Manifest.permission.BLUETOOTH_SCAN
-                    ),
-                    200
-                )
-            }
+//            hm10Helper.connectDirectly()
         }
 
         setContent {
             CobotTheme {
                 var selectedTab by remember { mutableStateOf("AOF") }
-                val context = LocalContext.current
-                val bluetoothAdapter: BluetoothAdapter? =
-                    remember {
-                        (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
-                    }
 
-                if (bluetoothAdapter?.isEnabled == false) {
-                    val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                    startActivityForResult(enableBtIntent, 1)
-                }
                 LaunchedEffect(hm10Helper.receivedMessage.value) {
                     when {
-                        hm10Helper.receivedMessage.value.contains("AOF") -> selectedTab = "AOF" // Follow tab
-                        hm10Helper.receivedMessage.value.contains("AON") -> selectedTab = "AON" // Emotion tab
+                        hm10Helper.receivedMessage.value.contains("AOF") -> selectedTab = "AOF"
+                        hm10Helper.receivedMessage.value.contains("AON") -> selectedTab = "AON"
                     }
                 }
 
@@ -145,35 +103,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN])
-    fun connectToHM10(macAddress: String) {
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(macAddress)
-        val uuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-
-        val socket = device.createRfcommSocketToServiceRecord(uuid)
-
-        Thread {
-            try {
-                bluetoothAdapter.cancelDiscovery()
-                socket.connect()
-                Log.d("Bluetooth", "Connected to HM-10/1C")
-
-                val outputStream = socket.outputStream
-                val inputStream = socket.inputStream
-
-                outputStream.write("Hello from Android\n".toByteArray())
-
-                val buffer = ByteArray(1024)
-                val bytes = inputStream.read(buffer)
-                val receivedMessage = String(buffer, 0, bytes)
-                Log.d("Bluetooth", "Received: $receivedMessage")
-
-            } catch (e: Exception) {
-                Log.e("Bluetooth", "Connection failed", e)
-            }
-        }.start()
     }
 }
