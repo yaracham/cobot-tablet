@@ -16,7 +16,7 @@ class HM10BluetoothHelper(private val context: Context) {
 
     private var bluetoothGatt: BluetoothGatt? = null
     private val targetDeviceMacAddress = "3C:A3:08:90:7D:62" // Replace with your device's MAC
-    var connectionStatus = mutableStateOf("Not connected")
+    val connectionState = mutableStateOf<BluetoothConnectionState>(BluetoothConnectionState.Idle)
     var receivedMessage = mutableStateOf("") // State for the received message
 
     private val bluetoothAdapter: BluetoothAdapter? =
@@ -27,10 +27,14 @@ class HM10BluetoothHelper(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.S)
     fun connectDirectly() {
+        Log.v("HII","hereeeeeeeeeee")
+        connectionState.value = BluetoothConnectionState.Connecting
+
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
             != PackageManager.PERMISSION_GRANTED
         ) {
             Log.e("BLE", "Permission denied: BLUETOOTH_CONNECT")
+            connectionState.value = BluetoothConnectionState.Error("Bluetooth permission denied.")
             return
         }
 
@@ -40,8 +44,10 @@ class HM10BluetoothHelper(private val context: Context) {
             Log.d("BLE", "Connecting to $targetDeviceMacAddress")
         } else {
             Log.e("BLE", "Device not found or Bluetooth not supported.")
+            connectionState.value = BluetoothConnectionState.Error("Device not found or Bluetooth not supported.")
         }
     }
+
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     @RequiresApi(Build.VERSION_CODES.S)
@@ -49,14 +55,12 @@ class HM10BluetoothHelper(private val context: Context) {
         bluetoothGatt = device.connectGatt(context, false, object : BluetoothGattCallback() {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.d("BLE", "Connected to device. Discovering services...")
-                    connectionStatus.value = "Connected"
-                    gatt?.discoverServices()
-                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.d("BLE", "Disconnected from device.")
-                    connectionStatus.value = "Disconnected"
+                connectionState.value = when (newState) {
+                    BluetoothProfile.STATE_CONNECTED -> BluetoothConnectionState.Connected
+                    BluetoothProfile.STATE_DISCONNECTED -> BluetoothConnectionState.Error("Disconnected from device.")
+                    else -> BluetoothConnectionState.Error("Unknown connection state.")
                 }
+
             }
 
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {

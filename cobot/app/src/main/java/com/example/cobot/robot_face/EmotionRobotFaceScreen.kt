@@ -1,11 +1,13 @@
 package com.example.cobot.robot_face
 
-import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -14,11 +16,17 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.example.cobot.R
+import com.example.cobot.bluetooth.BluetoothConnectionState
+import com.example.cobot.bluetooth.HM10BluetoothHelper
 import com.example.cobot.emotion_detection.CameraPreview
 import com.example.cobot.emotion_detection.classifyEmotionFromBlendshapes
 import com.example.cobot.emotion_detection.createFaceLandmarker
@@ -27,16 +35,6 @@ import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Alignment
-import com.example.cobot.bluetooth.BluetoothManager
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
-import android.Manifest
-import com.example.cobot.bluetooth.BluetoothState
-import com.example.cobot.bluetooth.HM10BluetoothHelper
 
 @RequiresApi(value = 31)
 @Composable
@@ -44,6 +42,7 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
 //    val bluetoothState by bluetoothManager.bluetoothState
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val state by hM10BluetoothHelper.connectionState
 
     // State initialization
     var detectedEmotion by remember { mutableStateOf("Detecting...") }
@@ -153,7 +152,10 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
                             // Debug log to verify content
                             Log.d("Blendshapes", faceBlendshapes.toString())
 
-                            detectedEmotion = classifyEmotionFromBlendshapes(faceBlendshapes, debugText = mutableStateOf(""))
+                            detectedEmotion = classifyEmotionFromBlendshapes(
+                                faceBlendshapes,
+                                debugText = mutableStateOf("")
+                            )
                             Log.d("EmotionDetection", "Detected emotion: $detectedEmotion")
                         } else {
                             detectedEmotion = "No face detected"
@@ -182,15 +184,42 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
         }
 
         RobotFace(emotion = finalEmotion)
+        if (state == BluetoothConnectionState.Connected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_bluetooth_connected_24),
+                    contentDescription = "bluetooth connected",
+                    tint = Color.Blue
+                )
+            }
+        } else if (state is BluetoothConnectionState.Error || state == BluetoothConnectionState.Disconnected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .clickable { }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_bluetooth_disabled_24),
+                    contentDescription = "bluetooth disconnected",
+                    tint = Color.Blue
+                )
+            }
+        }
+
     }
 }
 
-fun getRobotEmotion(bluetoothState: BluetoothState, detectedEmotion: String): Emotion {
-    return when {
-        bluetoothState.isConnecting -> Emotion.CONNECTING
-        bluetoothState.isConnected -> Emotion.HAPPY
-        detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED
-        detectedEmotion.equals("sleeping", ignoreCase = true) -> Emotion.SLEEPING
-        else -> Emotion.NEUTRAL
-    }
-}
+//fun getRobotEmotion(bluetoothState: BluetoothState, detectedEmotion: String): Emotion {
+//    return when {
+//        bluetoothState.isConnecting -> Emotion.CONNECTING
+//        bluetoothState.isConnected -> Emotion.HAPPY
+//        detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED
+//        detectedEmotion.equals("sleeping", ignoreCase = true) -> Emotion.SLEEPING
+//        else -> Emotion.NEUTRAL
+//    }
+//}

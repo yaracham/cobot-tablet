@@ -17,7 +17,6 @@ import com.example.cobot.bluetooth.HM10BluetoothHelper
 @Composable
 fun MainScreen(hm10Helper: HM10BluetoothHelper) {
 //    var status by remember { mutableStateOf("Not connected") }
-    val status by hm10Helper.connectionStatus
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -41,6 +40,6 @@ fun MainScreen(hm10Helper: HM10BluetoothHelper) {
         }) {
             Text("Send Message")
         }
-        Text("Status: $status", style = MaterialTheme.typography.bodyLarge)
+//        Text("Status: $status", style = MaterialTheme.typography.bodyLarge)
     }
 }

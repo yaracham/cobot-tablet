@@ -30,9 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.cobot.bluetooth.BluetoothManager as MyBluetoothManager
-import com.example.cobot.emotion_detection.LiveEmotionDetectionScreen
 import com.example.cobot.PersonFollowing.PersonFollowingScreen
+import com.example.cobot.bluetooth.BluetoothConnectionDialog
+import com.example.cobot.bluetooth.BluetoothConnectionState
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import com.example.cobot.robot_face.RobotFaceEmotionDemo
 import com.example.cobot.ui.theme.CobotTheme
@@ -104,6 +104,8 @@ class MainActivity : ComponentActivity() {
             CobotTheme {
                 var selectedTab by remember { mutableStateOf("AOF") }
                 val context = LocalContext.current
+                val state by hm10Helper.connectionState
+
                 val bluetoothAdapter: BluetoothAdapter? =
                     remember {
                         (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
@@ -119,6 +121,11 @@ class MainActivity : ComponentActivity() {
                         hm10Helper.receivedMessage.value.contains("AON") -> selectedTab = "AON" // Emotion tab
                     }
                 }
+                BluetoothConnectionDialog(
+                    state = state,
+                    onRetry = { hm10Helper.connectDirectly() },
+                    onDismiss = { hm10Helper.connectionState.value = BluetoothConnectionState.Disconnected }
+                )
 
                 Column(
                     modifier = Modifier
