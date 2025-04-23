@@ -36,6 +36,16 @@ import com.google.mediapipe.tasks.components.containers.Category
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 
+enum class Emotion {
+    NEUTRAL,
+    HAPPY,
+    SAD,
+    ANGRY,
+    SLEEPING,
+    SURPRISED,
+    CONNECTING
+}
+
 @RequiresApi(value = 31)
 @Composable
 fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
@@ -71,25 +81,7 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
             lastNeutralTimestamp = null // reset if emotion changes
         }
     }
-//    LaunchedEffect(Unit) {
-//        bluetoothManager.getPairedDevices(context)
-//        bluetoothManager.pairedDevices.collect { devices ->
-//            val hcDevice = devices.find { it.name?.contains("HC-06") == true }
-//            if (hcDevice != null &&
-//                !bluetoothManager.bluetoothState.value.isConnected &&
-//                !bluetoothManager.bluetoothState.value.isConnecting
-//            ) {
-//                bluetoothManager.connectToDevice(hcDevice, context)
-//            }
-//        }
-//    }
-//    LaunchedEffect(bluetoothState.isConnected) {
-//        if (bluetoothState.isConnected) {
-//            emotionOverride = Emotion.HAPPY
-//            delay(1000) // 1 second delay
-//            emotionOverride = null // go back to detected emotion
-//        }
-//    }
+
     LaunchedEffect(detectedEmotion) {
         while (true) {
             val command = when (detectedEmotion) {
@@ -210,16 +202,5 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
                 )
             }
         }
-
     }
 }
-
-//fun getRobotEmotion(bluetoothState: BluetoothState, detectedEmotion: String): Emotion {
-//    return when {
-//        bluetoothState.isConnecting -> Emotion.CONNECTING
-//        bluetoothState.isConnected -> Emotion.HAPPY
-//        detectedEmotion.equals("Surprised", ignoreCase = true) -> Emotion.SURPRISED
-//        detectedEmotion.equals("sleeping", ignoreCase = true) -> Emotion.SLEEPING
-//        else -> Emotion.NEUTRAL
-//    }
-//}
