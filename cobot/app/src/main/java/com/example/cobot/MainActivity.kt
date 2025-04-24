@@ -19,6 +19,9 @@ import com.example.cobot.ui.theme.CobotTheme
 
 
 class MainActivity : ComponentActivity() {
+    enum class ScreenState {
+        AUTOMATION, EMOTION
+    }
 
     private lateinit var hm10Helper: HM10BluetoothHelper
 
@@ -59,26 +62,29 @@ class MainActivity : ComponentActivity() {
                 CobotTheme {
                     val state by hm10Helper.connectionState
                     val message by hm10Helper.receivedMessage
-                    val cleanedMessage = message.trim()
 
-                    BluetoothConnectionDialog(
-                        state = state,
-                        onRetry = { hm10Helper.connectDirectly() },
-                        onDismiss = {
-                            hm10Helper.connectionState.value = BluetoothConnectionState.Disconnected
+                    var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
+                    var lastCommand by remember { mutableStateOf("") }
+
+                    val cleanedMessage = message.trim().uppercase()
+
+                    LaunchedEffect(cleanedMessage) {
+                        if (cleanedMessage != lastCommand) {
+                            lastCommand = cleanedMessage
+                            currentScreen = when (cleanedMessage) {
+                                "-AON" -> ScreenState.AUTOMATION
+                                "-AFF" -> ScreenState.EMOTION
+                                else -> currentScreen // Don't change screen for dashes or unknown commands
+                            }
+                            Log.d("BLE", "Switched to screen: $currentScreen")
                         }
-                    )
-
-                    LaunchedEffect(message) {
-                        // If you need to perform side effects here, you still can.
-                        Log.d("BLE", "New cleaned message: $cleanedMessage")
                     }
 
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
-                        AppView(automation = cleanedMessage, hm10Helper)
+                        AppView(screen = currentScreen, hm10Helper)
                     }
                 }
             }

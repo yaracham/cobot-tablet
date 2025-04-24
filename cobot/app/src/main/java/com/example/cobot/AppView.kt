@@ -10,13 +10,11 @@ import com.example.cobot.robot_face.RobotFaceEmotionDemo
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun AppView(
-    automation: String,
+    screen: MainActivity.ScreenState,
     hM10BluetoothHelper: HM10BluetoothHelper
 ) {
-
-    when (automation.trim().uppercase()) {
-        "-AON" -> PersonFollowingScreen(hM10BluetoothHelper)
-        "-AFF" -> RobotFaceEmotionDemo(hM10BluetoothHelper)
-        else -> RobotFaceEmotionDemo(hM10BluetoothHelper)
+    when (screen) {
+        MainActivity.ScreenState.AUTOMATION -> PersonFollowingScreen(hM10BluetoothHelper)
+        MainActivity.ScreenState.EMOTION -> RobotFaceEmotionDemo(hM10BluetoothHelper)
     }
 }
