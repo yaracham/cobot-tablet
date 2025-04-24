@@ -211,7 +211,7 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
+                    .padding(top = 32.dp, end = 16.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_bluetooth_connected_24),
@@ -223,7 +223,7 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
+                    .padding(top = 36.dp, end = 16.dp)
                     .clickable { }
             ) {
                 Icon(

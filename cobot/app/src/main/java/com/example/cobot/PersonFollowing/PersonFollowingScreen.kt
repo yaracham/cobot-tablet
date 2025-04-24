@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cobot.EyesAnimation
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
