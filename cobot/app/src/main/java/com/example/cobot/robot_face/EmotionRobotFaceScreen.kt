@@ -43,23 +43,21 @@ enum class Emotion {
     ANGRY,
     SLEEPING,
     SURPRISED,
-    CONNECTING
 }
 
 @RequiresApi(value = 31)
 @Composable
 fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
-//    val bluetoothState by bluetoothManager.bluetoothState
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val state by hM10BluetoothHelper.connectionState
+    var lastEmotionChangeTimestamp by remember { mutableStateOf(0L) }
+    var emotionLockDuration by remember { mutableStateOf(0L) }
 
-    // State initialization
     var detectedEmotion by remember { mutableStateOf("Detecting...") }
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
     var captureFrame by remember { mutableIntStateOf(0) }
 
-    // Initialize face landmarker
     val faceLandmarker = remember { createFaceLandmarker(context) }
     var lastNeutralTimestamp by remember { mutableStateOf<Long?>(null) }
 
@@ -82,19 +80,51 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
         }
     }
 
-    LaunchedEffect(detectedEmotion) {
+    LaunchedEffect(Unit) {
         while (true) {
-            val command = when (detectedEmotion) {
-                "Happy" -> "EA\r\n"
-                "Sad" -> "ES\r\n"
-                "Surprised" -> "EU\r\n"
-                "Angry" -> "EY\r\n"
-                else -> ""
+            if (emotionOverride == null && detectedEmotion != "Neutral" && detectedEmotion != "Detecting...") {
+                val duration = when (detectedEmotion.lowercase()) {
+                    "happy" -> 7000L
+                    "sad" -> 10000L
+                    "angry" -> 10000L
+                    "surprised" -> 5000L
+                    else -> 0L
+                }
+
+                emotionOverride = when (detectedEmotion.lowercase()) {
+                    "happy" -> Emotion.HAPPY
+                    "sad" -> Emotion.SAD
+                    "angry" -> Emotion.ANGRY
+                    "surprised" -> Emotion.SURPRISED
+                    else -> null
+                }
+
+                // Send Bluetooth command only once
+                val command = when (detectedEmotion.lowercase()) {
+                    "happy" -> "EA\r\n"
+                    "sad" -> "ES\r\n"
+                    "surprised" -> "EU\r\n"
+                    "angry" -> "EY\r\n"
+                    else -> ""
+                }
+
+                if (command.isNotEmpty()) {
+                    hM10BluetoothHelper.sendMessage(command)
+                }
+
+                // Wait the emotion duration
+                delay(duration)
+
+                // Reset to neutral
+                emotionOverride = Emotion.NEUTRAL
+                detectedEmotion = "Neutral"
             }
-            hM10BluetoothHelper.sendMessage(command)
-            delay(5000) // Send every 5 seconds
+
+            delay(500)
+            emotionOverride = null// small polling interval
         }
     }
+
     // Frame processing loop
     LaunchedEffect(Unit) {
         while (true) {
@@ -144,10 +174,12 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
                             // Debug log to verify content
                             Log.d("Blendshapes", faceBlendshapes.toString())
 
-                            detectedEmotion = classifyEmotionFromBlendshapes(
-                                faceBlendshapes,
-                                debugText = mutableStateOf("")
-                            )
+                            if (emotionOverride == null) {
+                                detectedEmotion = classifyEmotionFromBlendshapes(
+                                    faceBlendshapes,
+                                    debugText = mutableStateOf("")
+                                )
+                            }
                             Log.d("EmotionDetection", "Detected emotion: $detectedEmotion")
                         } else {
                             detectedEmotion = "No face detected"
@@ -159,7 +191,6 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
                     detectedEmotion = "Error: ${e.message?.take(20)}..."
                     Log.e("EmotionDetection", "Frame processing error", e)
                 } finally {
-                    // Recycle the bitmap to free memory
                     bitmap.recycle()
                 }
             }
