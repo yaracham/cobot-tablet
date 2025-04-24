@@ -27,7 +27,7 @@ class HM10BluetoothHelper(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.S)
     fun connectDirectly() {
-        Log.v("HII","hereeeeeeeeeee")
+        Log.v("HII", "hereeeeeeeeeee")
         connectionState.value = BluetoothConnectionState.Connecting
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
@@ -44,7 +44,8 @@ class HM10BluetoothHelper(private val context: Context) {
             Log.d("BLE", "Connecting to $targetDeviceMacAddress")
         } else {
             Log.e("BLE", "Device not found or Bluetooth not supported.")
-            connectionState.value = BluetoothConnectionState.Error("Device not found or Bluetooth not supported.")
+            connectionState.value =
+                BluetoothConnectionState.Error("Device not found or Bluetooth not supported.")
         }
     }
 
@@ -55,18 +56,28 @@ class HM10BluetoothHelper(private val context: Context) {
         bluetoothGatt = device.connectGatt(context, false, object : BluetoothGattCallback() {
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    Log.d("BLE", "Connected to device. Discovering services...")
+                    gatt?.discoverServices()
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    Log.d("BLE", "Disconnected from device.")
+                }
                 connectionState.value = when (newState) {
                     BluetoothProfile.STATE_CONNECTED -> BluetoothConnectionState.Connected
                     BluetoothProfile.STATE_DISCONNECTED -> BluetoothConnectionState.Error("Disconnected from device.")
                     else -> BluetoothConnectionState.Error("Unknown connection state.")
                 }
-
             }
 
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-                if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (status == BluetoothGatt.GATT_SUCCESS && gatt != null) {
                     Log.d("BLE", "Services discovered successfully.")
-                    // Automatically start receiving messages after services are discovered
+                    for (service in gatt.services) {
+                        Log.d("BLE", "Service UUID: ${service.uuid}")
+                        for (characteristic in service.characteristics) {
+                            Log.d("BLE", "-- Characteristic UUID: ${characteristic.uuid}")
+                        }
+                    }
                     startReceivingMessages()
                 } else {
                     Log.e("BLE", "Service discovery failed with status: $status")
@@ -104,7 +115,10 @@ class HM10BluetoothHelper(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.S)
     fun sendMessage(message: String) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
             != PackageManager.PERMISSION_GRANTED
         ) {
             Log.e("BLE", "Cannot send: BLUETOOTH_CONNECT permission not granted")
@@ -125,7 +139,10 @@ class HM10BluetoothHelper(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.S)
     fun startReceivingMessages() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
             != PackageManager.PERMISSION_GRANTED
         ) {
             Log.e("BLE", "Cannot receive: BLUETOOTH_CONNECT permission not granted")

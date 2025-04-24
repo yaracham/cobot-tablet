@@ -9,20 +9,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
@@ -34,11 +23,13 @@ import com.example.cobot.bluetooth.HM10BluetoothHelper
 import com.example.cobot.robot_face.RobotFaceEmotionDemo
 import com.example.cobot.ui.theme.CobotTheme
 
+// === Constants for easier maintenance ===
+private const val TAB_AFF = "-AFF"
+private const val TAB_AON = "-AON"
+
 class MainActivity : ComponentActivity() {
 
     private val CAMERA_PERMISSION_CODE = 100
-
-    //    private val bluetoothManager = MyBluetoothManager()
     private lateinit var hm10Helper: HM10BluetoothHelper
 
     private fun checkCameraPermission() {
@@ -70,7 +61,7 @@ class MainActivity : ComponentActivity() {
         launcher.launch(permissions.toTypedArray())
     }
 
-    @RequiresApi(value = 31)
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -84,47 +75,48 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CobotTheme {
-                var selectedTab by remember { mutableStateOf("AOF") }
-                val context = LocalContext.current
+                var selectedTab by remember { mutableStateOf(TAB_AFF) }
                 val state by hm10Helper.connectionState
 
-
-                LaunchedEffect(hm10Helper.receivedMessage.value) {
-                    when {
-                        hm10Helper.receivedMessage.value.contains("AOF") -> selectedTab = "AOF" // Follow tab
-                        hm10Helper.receivedMessage.value.contains("AON") -> selectedTab = "AON" // Emotion tab
-                    }
-                }
                 BluetoothConnectionDialog(
                     state = state,
                     onRetry = { hm10Helper.connectDirectly() },
                     onDismiss = { hm10Helper.connectionState.value = BluetoothConnectionState.Disconnected }
                 )
 
+                LaunchedEffect(hm10Helper.receivedMessage.value) {
+                    val cleanedMessage = hm10Helper.receivedMessage.value.trim()
+                    when {
+                        cleanedMessage.contains(TAB_AFF) -> selectedTab = TAB_AFF
+                        cleanedMessage.contains(TAB_AON) -> selectedTab = TAB_AON
+                    }
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(WindowInsets.statusBars.asPaddingValues())
                 ) {
-                    TabRow(selectedTabIndex = if (selectedTab == "AON") 0 else 1) {
+                    TabRow(selectedTabIndex = if (selectedTab == TAB_AON) 0 else 1) {
                         Tab(
-                            selected = selectedTab == "AON",
-                            onClick = { selectedTab = "AON" },
+                            selected = selectedTab == TAB_AON,
+                            onClick = { selectedTab = TAB_AON },
                             text = { Text("Automated Driving") }
                         )
                         Tab(
-                            selected = selectedTab == "AOF",
-                            onClick = { selectedTab = "AOF" },
+                            selected = selectedTab == TAB_AFF,
+                            onClick = { selectedTab = TAB_AFF },
                             text = { Text("Emotion Detection") }
                         )
                     }
 
                     when (selectedTab) {
-                        "AOF" -> RobotFaceEmotionDemo(hm10Helper)
-                        "AON" -> PersonFollowingScreen(hm10Helper)
+                        TAB_AFF -> RobotFaceEmotionDemo(hm10Helper)
+                        TAB_AON -> PersonFollowingScreen(hm10Helper)
                     }
                 }
             }
         }
     }
 }
+
