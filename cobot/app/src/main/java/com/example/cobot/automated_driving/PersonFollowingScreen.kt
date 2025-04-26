@@ -5,19 +5,23 @@ import android.os.Build
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cobot.R
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
@@ -76,10 +80,14 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
         )
 
         // Bounding box & landmarks overlay
-        Canvas(modifier = Modifier.fillMaxSize().align(Alignment.Center)) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.Center)
+        ) {
             boundingBox?.let { box ->
                 drawRect(
-                    color = Color.Red,
+                    color = Color.Blue,
                     topLeft = Offset(box.left * size.width, box.top * size.height),
                     size = Size(
                         (box.right - box.left) * size.width,
@@ -88,16 +96,16 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
                     style = Stroke(width = 4f)
                 )
             }
-            poseLandmarks.forEach { landmark ->
-                drawCircle(
-                    color = Color.Green,
-                    radius = 6f,
-                    center = Offset(
-                        x = landmark.x * size.width,
-                        y = landmark.y * size.height
-                    )
-                )
-            }
+//            poseLandmarks.forEach { landmark ->
+//                drawCircle(
+//                    color = Color.Green,
+//                    radius = 6f,
+//                    center = Offset(
+//                        x = landmark.x * size.width,
+//                        y = landmark.y * size.height
+//                    )
+//                )
+//            }
         }
 
         // Animated eyes overlay
@@ -116,30 +124,55 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
             )
         }
 
-        // Position indicator
-        Card(
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 60.dp)
-                .fillMaxWidth(0.8f),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-            )
+                .fillMaxWidth(0.8f)
         ) {
-            Text(
-                text = "Position: $detectedPosition",
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Text(
-                text = "Distance: $estimatedDistance",
-                modifier = Modifier.padding(4.dp).fillMaxWidth(),
-                fontSize = 18.sp,
-                textAlign = TextAlign.Center,
-                color = Color.Black
-            )
+            Card(
+                modifier = Modifier
+                    .padding(bottom = 60.dp , end = 20.dp)
+                    .fillMaxWidth(0.8f),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                )
+            ) {
+                Text(
+                    text = "Position: $detectedPosition",
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            FilledIconButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier
+                    .size(60.dp)
+//                    .clip(RoundedCornerShape(2.dp))
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_tag_faces_24),
+                    contentDescription = "button robot face option",
+                    modifier = Modifier
+                        .background(Color.Blue)
+                        .fillMaxSize()
+                        .padding(8.dp)
+                )
+            }
+
+            // Position indicator
+
+//            Text(
+//                text = "Distance: $estimatedDistance",
+//                modifier = Modifier.padding(4.dp).fillMaxWidth(),
+//                fontSize = 18.sp,
+//                textAlign = TextAlign.Center,
+//                color = Color.Black
+//            )
         }
     }
 }
