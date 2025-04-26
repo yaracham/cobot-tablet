@@ -1,4 +1,4 @@
-package com.example.cobot.PersonFollowing
+package com.example.cobot.automated_driving
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG

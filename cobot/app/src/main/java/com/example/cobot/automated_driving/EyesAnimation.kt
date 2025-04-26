@@ -1,4 +1,4 @@
-package com.example.cobot.PersonFollowing
+package com.example.cobot.automated_driving
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring

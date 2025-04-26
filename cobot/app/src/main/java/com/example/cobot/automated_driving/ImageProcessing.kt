@@ -1,4 +1,4 @@
-package com.example.cobot.PersonFollowing
+package com.example.cobot.automated_driving
 
 import android.graphics.*
 import android.media.Image

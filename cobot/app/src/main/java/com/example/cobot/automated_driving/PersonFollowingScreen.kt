@@ -1,4 +1,4 @@
-package com.example.cobot.PersonFollowing
+package com.example.cobot.automated_driving
 
 import android.graphics.RectF
 import android.os.Build
@@ -22,14 +22,12 @@ import com.example.cobot.bluetooth.HM10BluetoothHelper
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 
-private const val TAG = "PersonFollowingScreen"
 
 @Composable
 fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var detectedPosition by remember { mutableStateOf("Detecting...") }
-    var lastSentCommand by remember { mutableStateOf("") }
 
     var boundingBox by remember { mutableStateOf<RectF?>(null) }
     var poseLandmarks by remember { mutableStateOf<List<SimpleLandmark>>(emptyList()) }

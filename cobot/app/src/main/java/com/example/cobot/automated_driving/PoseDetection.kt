@@ -1,11 +1,10 @@
-package com.example.cobot.PersonFollowing
+package com.example.cobot.automated_driving
 
 import android.content.Context
 import android.graphics.RectF
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 
 data class SimpleLandmark(val x: Float, val y: Float, val z: Float)
 
