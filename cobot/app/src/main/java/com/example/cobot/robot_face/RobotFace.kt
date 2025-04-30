@@ -48,6 +48,7 @@ fun RobotFace(emotion: Emotion) {
         when (target) {
             Emotion.HAPPY -> 140f
             Emotion.NEUTRAL -> 100f
+            Emotion.SAD -> 100f
             else -> 80f
         }
     }

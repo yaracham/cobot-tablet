@@ -84,6 +84,11 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
+                        BluetoothConnectionDialog(
+                            state = state,
+                            onRetry = { hm10Helper.connectDirectly() },
+                            onDismiss = { /* Optionally update state or do nothing */ }
+                        )
                         AppView(screen = currentScreen, hm10Helper)
                     }
                 }
