@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                     val state by hm10Helper.connectionState
                     val message by hm10Helper.receivedMessage
 
-                    var currentScreen by remember { mutableStateOf(ScreenState.AUTOMATION) }
+                    var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
                     var lastCommand by remember { mutableStateOf("") }
 
                     val cleanedMessage = message.trim().uppercase()

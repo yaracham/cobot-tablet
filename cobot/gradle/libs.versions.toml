@@ -28,6 +28,7 @@ tensorflowLiteVersion = "2.12.0"
 litertGpu = "1.2.0"
 roomKtx = "2.6.1"
 identityJvm = "202411.1"
+recyclerview = "1.4.0"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCoreVersion" }
@@ -67,6 +68,7 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 litert-gpu = { group = "com.google.ai.edge.litert", name = "litert-gpu", version.ref = "litertGpu" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 identity-jvm = { group = "com.android.identity", name = "identity-jvm", version.ref = "identityJvm" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

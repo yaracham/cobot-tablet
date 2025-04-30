@@ -1,5 +1,6 @@
 package com.example.cobot.robot_face
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -31,9 +32,14 @@ import com.example.cobot.emotion_detection.CameraPreview
 import com.example.cobot.emotion_detection.classifyEmotionFromBlendshapes
 import com.example.cobot.emotion_detection.createFaceLandmarker
 import com.example.cobot.emotion_detection.processFaceWithLandmarker
+import com.google.mediapipe.examples.gesturerecognizer.GestureRecognizerHelper
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 
 enum class Emotion {
@@ -45,9 +51,10 @@ enum class Emotion {
     SURPRISED,
 }
 
+@SuppressLint("RememberReturnType")
 @RequiresApi(value = 31)
 @Composable
-fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
+fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val state by hM10BluetoothHelper.connectionState
@@ -62,6 +69,40 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
     var lastNeutralTimestamp by remember { mutableStateOf<Long?>(null) }
 
     var emotionOverride by remember { mutableStateOf<Emotion?>(null) }
+
+    val gestureRecognizerHelper = remember {
+        GestureRecognizerHelper(
+            context = context,
+            currentDelegate = GestureRecognizerHelper.DELEGATE_CPU,
+            runningMode = RunningMode.LIVE_STREAM,
+            gestureRecognizerListener = object : GestureRecognizerHelper.GestureRecognizerListener {
+                var gestureLock = false
+
+                override fun onResults(resultBundle: GestureRecognizerHelper.ResultBundle) {
+                    val gestures = resultBundle.results.firstOrNull()?.gestures() ?: return
+                    for (gestureGroup in gestures) {
+                        val detected = gestureGroup.firstOrNull()?.categoryName()
+                        Log.d("Gesture", "Detected gesture: $detected")
+                        if (detected.equals("Open_Palm", ignoreCase = true) && !gestureLock) {
+                            gestureLock = true
+                            hM10BluetoothHelper.sendMessage("H\r\n")
+                            Log.d("Gesture", "Sent H over Bluetooth for Open_Palm")
+
+                            // Reset after 5 seconds
+                            CoroutineScope(Dispatchers.Main).launch {
+                                delay(5000)
+                                gestureLock = false
+                            }
+                        }
+                    }
+                }
+
+                override fun onError(error: String, errorCode: Int) {
+                    Log.e("Gesture", "Error: $error")
+                }
+            }
+        )
+    }
 
     LaunchedEffect(detectedEmotion) {
         Log.d("EMOTION", detectedEmotion)
@@ -137,7 +178,9 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
     DisposableEffect(Unit) {
         onDispose {
             faceLandmarker?.close()
+            gestureRecognizerHelper.clearGestureRecognizer()
             cameraExecutor.shutdown()
+
         }
     }
 
@@ -164,6 +207,7 @@ fun RobotFaceEmotionDemo(hM10BluetoothHelper: HM10BluetoothHelper) {
 
                     // Process the image with face landmarker
                     val landmarkerResult = processFaceWithLandmarker(faceLandmarker, mpImage)
+                    gestureRecognizerHelper.recognizeAsync(mpImage, System.currentTimeMillis())
 
                     // Classify emotion based on blendshapes
                     landmarkerResult?.let { result ->
