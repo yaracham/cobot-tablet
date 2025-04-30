@@ -1,6 +1,3 @@
-// This is the main RobotFace.kt file to include logic routing
-// to each emotion-specific Composable or drawing function.
-
 package com.example.cobot.robot_face
 
 import androidx.compose.animation.core.animateFloat
@@ -30,7 +27,6 @@ import kotlin.random.Random
 fun RobotFace(emotion: Emotion) {
     val blinkProgress = remember { androidx.compose.animation.core.Animatable(1f) }
     val eyeOffset = remember { androidx.compose.animation.core.Animatable(0f) }
-    val context = LocalContext.current
 
     val transition = updateTransition(targetState = emotion, label = "EmotionTransition")
 
@@ -52,6 +48,7 @@ fun RobotFace(emotion: Emotion) {
         when (target) {
             Emotion.HAPPY -> 140f
             Emotion.NEUTRAL -> 100f
+            Emotion.SAD -> 100f
             else -> 80f
         }
     }
@@ -63,12 +60,6 @@ fun RobotFace(emotion: Emotion) {
                     delay(Random.nextLong(500L, 6000L))
                     blinkProgress.animateTo(0f, tween(100))
                     blinkProgress.animateTo(1f, tween(100))
-                }
-            }
-            Emotion.CONNECTING -> {
-                while (true) {
-                    eyeOffset.animateTo(-20f, tween(300))
-                    eyeOffset.animateTo(20f, tween(300))
                 }
             }
             else -> {
@@ -89,7 +80,6 @@ fun RobotFace(emotion: Emotion) {
             Emotion.NEUTRAL -> drawNeutralFace(centerX, centerY, blinkProgress.value, eyeCurve, mouthRadius)
             Emotion.SURPRISED -> drawSurprisedFace(centerX, centerY)
             Emotion.SLEEPING -> drawSleepingFace(centerX, centerY)
-            Emotion.CONNECTING -> drawConnectingFace(centerX, centerY, eyeOffset.value)
         }
     }
 }
