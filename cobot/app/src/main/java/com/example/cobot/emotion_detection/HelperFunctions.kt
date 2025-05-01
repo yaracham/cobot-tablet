@@ -13,12 +13,15 @@ import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
 import androidx.compose.runtime.MutableState
+import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarker
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
+import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
+import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -224,5 +227,64 @@ fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?,debugTe
         else -> "Neutral"
     }
 }
+
+ fun createGestureRecognizer(
+     context: Context,
+     modelAssetPath: String = "models/gesture_recognizer.task"
+ ): GestureRecognizer? {
+     return try {
+         val baseOptions = BaseOptions.builder()
+             .setModelAssetPath(modelAssetPath)
+             .build()
+         val options = GestureRecognizer.GestureRecognizerOptions.builder()
+             .setBaseOptions(baseOptions)
+             .setRunningMode(RunningMode.IMAGE)
+             .setNumHands(1)
+             .build()
+         GestureRecognizer.createFromOptions(context, options)
+     } catch (e: Exception) {
+         e.printStackTrace()
+         null
+     }
+ }
+
+ // Converts an ImageProxy (YUV) to MediaPipe MPImage for processing
+ @OptIn(ExperimentalGetImage::class)
+ fun imageProxyToMpImage(
+     imageProxy: ImageProxy,
+     context: Context
+ ): MPImage {
+     val bitmap = imageProxyToBitmap(imageProxy, context)
+     // Build MPImage from Bitmap using BitmapImageBuilder
+     return BitmapImageBuilder(bitmap).build()
+ }
+
+ // Processes a single frame through the GestureRecognizer
+ fun processGesture(
+     gestureRecognizer: GestureRecognizer?,
+     mpImage: MPImage
+ ): GestureRecognizerResult? {
+     return gestureRecognizer?.recognize(mpImage)
+ }
+
+ // Simple classification based on highest-scoring category
+ fun classifyGesture(
+     result: GestureRecognizerResult?,
+     debug: (String) -> Unit = {}
+ ): String {
+     if (result == null || result.gestures().isEmpty()) {
+         debug("No gesture detected")
+         return "None"
+     }
+     // Flatten all detected categories
+     val categories = result.gestures().flatten()
+     // Log each category with score
+     categories.forEach { debug("${it.categoryName()}: ${"%.2f".format(it.score())}") }
+     // Pick the top one
+     val top = categories.maxByOrNull { it.score() }
+     return top?.categoryName() ?: "Unknown"
+ }
+
+
 
 

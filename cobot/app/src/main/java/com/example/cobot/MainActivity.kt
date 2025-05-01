@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import com.example.cobot.bluetooth.BluetoothConnectionDialog
 import com.example.cobot.bluetooth.BluetoothConnectionState
 import com.example.cobot.bluetooth.HM10BluetoothHelper
+import com.example.cobot.emotion_detection.LiveEmotionDetectionScreen
 import com.example.cobot.ui.theme.CobotTheme
 
 
@@ -62,6 +63,7 @@ class MainActivity : ComponentActivity() {
                 CobotTheme {
                     val state by hm10Helper.connectionState
                     val message by hm10Helper.receivedMessage
+                    var showDialog by remember { mutableStateOf(true) }
 
                     var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
                     var lastCommand by remember { mutableStateOf("") }
@@ -84,12 +86,18 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
-                        BluetoothConnectionDialog(
-                            state = state,
-                            onRetry = { hm10Helper.connectDirectly() },
-                            onDismiss = { /* Optionally update state or do nothing */ }
+                        if (showDialog) {
+                            BluetoothConnectionDialog(
+                                state = state,
+                                onRetry = { hm10Helper.connectDirectly() },
+                                onDismiss = { showDialog = false }
+                            )
+                        }
+                        AppView(
+                            screen = currentScreen,
+                            hM10BluetoothHelper = hm10Helper,
+                            onRequestConnect = { showDialog = true }
                         )
-                        AppView(screen = currentScreen, hm10Helper)
                     }
                 }
             }

@@ -2,6 +2,7 @@
 agp = "8.5.0"
 cameraCoreVersion = "1.4.2"
 googleTasksVision = "0.10.14"
+googleTasksVisionVersion = "0.10.7"
 gradle = "14.0.2"
 gradleDownloadTask = "5.0.0"
 kotlin = "1.9.0"
@@ -56,6 +57,7 @@ tasks-core = { module = "com.google.mediapipe:tasks-core", version.ref = "tasksC
 tasks-vision = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVision" }
 tasks-vision-v01010 = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVisionVersion" }
 tasks-vision-v01014 = { module = "com.google.mediapipe:tasks-vision", version.ref = "googleTasksVision" }
+tasks-vision-v0107 = { module = "com.google.mediapipe:tasks-vision", version.ref = "googleTasksVisionVersion" }
 tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLite" }
 tensorflow-lite-gpu = { module = "org.tensorflow:tensorflow-lite-gpu", version.ref = "tensorflowLiteGpu" }
 tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }

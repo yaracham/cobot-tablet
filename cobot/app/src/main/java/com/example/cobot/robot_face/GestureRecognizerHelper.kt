@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.mediapipe.examples.gesturerecognizer
+package com.example.cobot.robot_face
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -321,7 +321,7 @@ class GestureRecognizerHelper(
 
     companion object {
         val TAG = "GestureRecognizerHelper ${this.hashCode()}"
-        private const val MP_RECOGNIZER_TASK = "gesture_recognizer.task"
+        private const val MP_RECOGNIZER_TASK = "models/gesture_recognizer.task"
 
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1

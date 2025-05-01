@@ -11,10 +11,14 @@ import com.example.cobot.robot_face.EmotionRobotFaceScreen
 @Composable
 fun AppView(
     screen: MainActivity.ScreenState,
-    hM10BluetoothHelper: HM10BluetoothHelper
+    hM10BluetoothHelper: HM10BluetoothHelper,
+    onRequestConnect: () -> Unit
 ) {
     when (screen) {
         MainActivity.ScreenState.AUTOMATION -> PersonFollowingScreen(hM10BluetoothHelper)
-        MainActivity.ScreenState.EMOTION -> EmotionRobotFaceScreen(hM10BluetoothHelper)
+        MainActivity.ScreenState.EMOTION -> EmotionRobotFaceScreen(
+            hM10BluetoothHelper,
+            onRequestConnect = onRequestConnect
+        )
     }
 }

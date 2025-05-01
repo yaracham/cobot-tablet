@@ -14,21 +14,31 @@ fun BluetoothConnectionDialog(
     when (state) {
         is BluetoothConnectionState.Connecting -> {
             AlertDialog(
-                onDismissRequest = {},
+                onDismissRequest = { onDismiss() },
                 title = { Text("Connecting") },
                 text = { Text("Connecting to Bluetooth device...") },
-                confirmButton = {}
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { onDismiss() }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
 
         is BluetoothConnectionState.Error -> {
             AlertDialog(
-                onDismissRequest = onDismiss,
+                onDismissRequest = { onDismiss() },
                 title = { Text("Connection Error") },
                 text = { Text(state.message) },
                 confirmButton = {
                     TextButton(onClick = onRetry) {
                         Text("Retry")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { onDismiss() }) {
+                        Text("Close")
                     }
                 }
             )

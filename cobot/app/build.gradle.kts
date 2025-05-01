@@ -115,7 +115,7 @@ dependencies {
 
     implementation (libs.tasks.core)
 
-    implementation ("com.google.mediapipe:tasks-vision:0.10.7")
+    implementation (libs.tasks.vision.v0107)
 
 
 
