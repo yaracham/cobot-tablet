@@ -36,6 +36,7 @@ import com.example.cobot.emotion_detection.createFaceLandmarker
 import com.example.cobot.emotion_detection.processFaceWithLandmarker
 import com.example.cobot.robot_face.GestureRecognizerHelper
 import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
@@ -50,17 +51,18 @@ enum class Emotion {
 }
 
 @SuppressLint("RememberReturnType")
-@RequiresApi(value = 31)
+@RequiresApi(31)
 @Composable
-fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestConnect: () -> Unit) {
+fun EmotionRobotFaceScreen(
+    hM10BluetoothHelper: HM10BluetoothHelper,
+    onRequestConnect: () -> Unit
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val state by hM10BluetoothHelper.connectionState
 
     var detectedGesture by remember { mutableStateOf("Detecting gesture...") }
     var detectedEmotion by remember { mutableStateOf("Detecting...") }
-    var lastEmotionChangeTimestamp by remember { mutableStateOf(0L) }
-    var emotionLockDuration by remember { mutableStateOf(0L) }
     var lastNeutralTimestamp by remember { mutableStateOf<Long?>(null) }
     var emotionOverride by remember { mutableStateOf<Emotion?>(null) }
 
@@ -78,7 +80,7 @@ fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestCo
         }
     }
 
-    // Handle prolonged neutral -> sleeping
+    @Suppress("unused")
     LaunchedEffect(detectedEmotion) {
         if (detectedEmotion == "Neutral") {
             if (lastNeutralTimestamp == null) lastNeutralTimestamp = System.currentTimeMillis()
@@ -93,46 +95,39 @@ fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestCo
 
     LaunchedEffect(Unit) {
         while (true) {
-            if (emotionOverride == null && detectedEmotion !in listOf(
-                    "Neutral",
-                    "Detecting...",
-                    "No face detected",
-                    "Error"
-                )
-            ) {
-                val duration = when (detectedEmotion.lowercase()) {
-                    "happy" -> 7000L
-                    "sad" -> 10000L
-                    "angry" -> 10000L
-                    "surprised" -> 5000L
+            if (emotionOverride == null && detectedEmotion !in listOf("neutral", "detecting")) {
+                val dur = when (detectedEmotion.lowercase()) {
+                    "happy" -> 7_000L
+                    "sad" -> 10_000L
+                    "angry" -> 10_000L
+                    "surprised" -> 5_000L
                     else -> 0L
                 }
-                val command = when (detectedEmotion.lowercase()) {
-                    "happy" -> "EA"
-                    "sad" -> "ES"
-                    "surprised" -> "EU"
-                    "angry" -> "EY"
+                val cmd = when (detectedEmotion.lowercase()) {
+                    "happy" -> "EA\r\n"
+                    "sad" -> "ES\r\n"
+                    "surprised" -> "EU\r\n"
+                    "angry" -> "EY\r\n"
                     else -> ""
                 }
-                // Safe mapping to Emotion enum
                 emotionOverride = when (detectedEmotion.lowercase()) {
                     "happy" -> Emotion.HAPPY
                     "sad" -> Emotion.SAD
                     "angry" -> Emotion.ANGRY
                     "surprised" -> Emotion.SURPRISED
-                    else -> null
+                    else -> Emotion.NEUTRAL
                 }
-                if (command.isNotEmpty()) hM10BluetoothHelper.sendMessage(command)
-                delay(duration)
-                emotionOverride = Emotion.NEUTRAL
-                detectedEmotion = "Neutral"
+                if (cmd.isNotEmpty()) hM10BluetoothHelper.sendMessage(cmd)
+                Log.d("EMOTIONCMD", cmd)
+                delay(dur)
+                // clear override so live detection resumes
+                emotionOverride = null
             }
             delay(500)
         }
     }
 
 
-// Frame trigger loop
     LaunchedEffect(Unit) {
         while (true) {
             delay(2000)
@@ -140,7 +135,6 @@ fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestCo
         }
     }
 
-// Cleanup
     DisposableEffect(Unit) {
         onDispose {
             faceLandmarker?.close()
@@ -161,28 +155,31 @@ fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestCo
             captureFrame = captureFrame
         ) { bitmap ->
             try {
-                // Face detection & emotion
                 val mpImage = BitmapImageBuilder(bitmap).build()
                 val landmarkerResult = processFaceWithLandmarker(faceLandmarker, mpImage)
-                landmarkerResult?.faceBlendshapes()?.orElse(null)?.let { blendshapes ->
-                    if (emotionOverride == null) {
-                        detectedEmotion =
-                            classifyEmotionFromBlendshapes(blendshapes, mutableStateOf(""))
+                landmarkerResult?.let { result ->
+                    val blendshapes: List<List<Category>>? = result.faceBlendshapes().orElse(null)
+                    if (blendshapes != null) {
+                        if (emotionOverride == null) {
+                            detectedEmotion =
+                                classifyEmotionFromBlendshapes(blendshapes, mutableStateOf(""))
+                        }
+                        Log.d("EmotionDetection", "Detected: $detectedEmotion")
+                    } else {
+                        detectedEmotion = "No face detected"
                     }
-                    Log.d("EmotionDetection", "Detected: $detectedEmotion")
                 } ?: run {
-                    detectedEmotion = "No face detected"
+                    detectedEmotion = "Detection failed"
                 }
 
-                // Gesture detection: rotate & mirror
                 val matrix = Matrix().apply {
                     postRotate(270f)
                     postScale(-1f, 1f, bitmap.width.toFloat(), bitmap.height.toFloat())
                 }
-                val corrected =
-                    Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                val corrected: Bitmap = Bitmap.createBitmap(
+                    bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
+                )
                 val gestureBundle = gestureHelper.recognizeImage(corrected)
-                Log.d("BundleGesture", gestureBundle.toString())
                 detectedGesture = gestureBundle
                     ?.results
                     ?.firstOrNull()
@@ -202,14 +199,12 @@ fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestCo
             }
         }
 
-        // React to gesture
         LaunchedEffect(detectedGesture) {
             if (detectedGesture.equals("Open_Palm", ignoreCase = true)) {
-                hM10BluetoothHelper.sendMessage("H\r\n")
+                hM10BluetoothHelper.sendMessage("HH\r\n")
             }
         }
 
-        // Draw robot face
         val finalEmotion = when {
             emotionOverride != null -> emotionOverride!!
             detectedEmotion.equals("Happy", true) -> Emotion.HAPPY
@@ -221,7 +216,6 @@ fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestCo
         }
         RobotFace(emotion = finalEmotion)
 
-        // Bluetooth status icon
         if (state == BluetoothConnectionState.Connected) {
             Box(
                 modifier = Modifier
@@ -239,13 +233,12 @@ fun EmotionRobotFaceScreen(hM10BluetoothHelper: HM10BluetoothHelper, onRequestCo
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 36.dp, end = 16.dp)
-                    .clickable { }
+                    .clickable { onRequestConnect() }
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_bluetooth_disabled_24),
                     contentDescription = null,
-                    tint = Color.Blue,
-                    modifier = Modifier.clickable { onRequestConnect() }
+                    tint = Color.Blue
                 )
             }
         }

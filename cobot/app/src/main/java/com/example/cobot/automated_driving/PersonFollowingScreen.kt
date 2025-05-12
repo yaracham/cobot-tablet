@@ -50,8 +50,8 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
     LaunchedEffect(Unit) {
         while (true) {
             val command = when (detectedPosition) {
-                "RIGHT" -> "RR\r\n"
-                "LEFT" -> "LL\r\n"
+                "RIGHT" -> "FR\r\n"
+                "LEFT" -> "FL\r\n"
                 "CENTER" -> "FF\r\n"
                 else -> "SS\r\n"
             }
