@@ -49,17 +49,23 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
     }
     LaunchedEffect(Unit) {
         while (true) {
-            val command = when (detectedPosition) {
-                "RIGHT" -> "FR\r\n"
-                "LEFT" -> "FL\r\n"
-                "CENTER" -> "FF\r\n"
-                else -> "SS\r\n"
+            val box = boundingBox
+            val command = if (box != null && !isBoxTooSmall(box)) {
+                when (detectedPosition) {
+                    "RIGHT" -> "FR\r\n"
+                    "LEFT" -> "FL\r\n"
+                    "CENTER" -> "FF\r\n"
+                    else -> "SS\r\n"
+                }
+            } else {
+                "SS\r\n" // Stop if box is too small
             }
+
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 hM10BluetoothHelper.sendMessage(command)
             }
-            delay(1000) // Send every 2 seconds
+            delay(1000)
         }
     }
 
@@ -85,7 +91,7 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
                 .fillMaxSize()
                 .align(Alignment.Center)
         ) {
-            boundingBox?.let { box ->
+            boundingBox?.takeIf { !isBoxTooSmall(it) }?.let { box ->
                 drawRect(
                     color = Color.Blue,
                     topLeft = Offset(box.left * size.width, box.top * size.height),
@@ -96,16 +102,6 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
                     style = Stroke(width = 4f)
                 )
             }
-//            poseLandmarks.forEach { landmark ->
-//                drawCircle(
-//                    color = Color.Green,
-//                    radius = 6f,
-//                    center = Offset(
-//                        x = landmark.x * size.width,
-//                        y = landmark.y * size.height
-//                    )
-//                )
-//            }
         }
 
         // Animated eyes overlay
@@ -138,8 +134,14 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
                     containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                 )
             ) {
+                val displayPosition = if (boundingBox != null && isBoxTooSmall(boundingBox!!)) {
+                    "No person"
+                } else {
+                    detectedPosition
+                }
+
                 Text(
-                    text = "Position: $detectedPosition",
+                    text = "Position: $displayPosition",
                     modifier = Modifier
                         .padding(16.dp)
                         .fillMaxWidth(),
@@ -147,12 +149,12 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
+
             }
             FilledIconButton(
                 onClick = { /*TODO*/ },
                 modifier = Modifier
                     .size(60.dp)
-//                    .clip(RoundedCornerShape(2.dp))
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_tag_faces_24),
@@ -176,3 +178,12 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
         }
     }
 }
+
+fun isBoxTooSmall(box: RectF, minWidth: Float = 0.06f, minHeight: Float = 0.2f): Boolean {
+    val width = box.right - box.left
+    val height = box.bottom - box.top
+
+    return width < minWidth || height < minHeight || width > height
+}
+
+

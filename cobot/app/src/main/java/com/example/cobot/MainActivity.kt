@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
         requestPermissions {
             hm10Helper = HM10BluetoothHelper(this)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                hm10Helper.connectDirectly()
+//                hm10Helper.connectDirectly()
             }
 
             setContent {
@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
                     val message by hm10Helper.receivedMessage
                     var showDialog by remember { mutableStateOf(true) }
 
-                    var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
+                    var currentScreen by remember { mutableStateOf(ScreenState.AUTOMATION) }
                     var lastCommand by remember { mutableStateOf("") }
 
                     val cleanedMessage = message.trim().uppercase()
