@@ -82,6 +82,12 @@ class MainActivity : ComponentActivity() {
                             Log.d("BLE", "Switched to screen: $currentScreen")
                         }
                     }
+                    LaunchedEffect(state) {
+                        if (state != BluetoothConnectionState.Connected) {
+                            currentScreen = ScreenState.EMOTION
+                            Log.d("BLE", "Bluetooth disconnected – switching to EMOTION screen")
+                        }
+                    }
 
                     Column(
                         modifier = Modifier
