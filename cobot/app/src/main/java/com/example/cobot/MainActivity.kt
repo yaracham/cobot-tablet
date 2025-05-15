@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
         requestPermissions {
             hm10Helper = HM10BluetoothHelper(this)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                hm10Helper.connectDirectly()
+                hm10Helper.connectDirectly()
             }
 
             setContent {
@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
                     val message by hm10Helper.receivedMessage
                     var showDialog by remember { mutableStateOf(true) }
 
-                    var currentScreen by remember { mutableStateOf(ScreenState.AUTOMATION) }
+                    var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
                     var lastCommand by remember { mutableStateOf("") }
 
                     val cleanedMessage = message.trim().uppercase()
@@ -80,6 +80,12 @@ class MainActivity : ComponentActivity() {
                                 else -> currentScreen // Don't change screen for dashes or unknown commands
                             }
                             Log.d("BLE", "Switched to screen: $currentScreen")
+                        }
+                    }
+                    LaunchedEffect(state) {
+                        if (state != BluetoothConnectionState.Connected) {
+                            currentScreen = ScreenState.EMOTION
+                            Log.d("BLE", "Bluetooth disconnected – switching to EMOTION screen")
                         }
                     }
 
