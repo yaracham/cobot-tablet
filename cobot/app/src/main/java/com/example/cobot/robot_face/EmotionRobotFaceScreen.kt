@@ -96,9 +96,9 @@ fun EmotionRobotFaceScreen(
         while (true) {
             if (emotionOverride == null && detectedEmotion !in listOf("neutral", "detecting")) {
                 val dur = when (detectedEmotion.lowercase()) {
-                    "happy" -> 7_000L
-                    "sad" -> 10_000L
-                    "angry" -> 10_000L
+                    "happy" -> 2_500L
+                    "sad" -> 5_000L
+                    "angry" -> 4_000L
                     "surprised" -> 5_000L
                     else -> 0L
                 }

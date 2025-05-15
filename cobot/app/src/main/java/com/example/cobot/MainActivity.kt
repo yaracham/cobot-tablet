@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
                     val message by hm10Helper.receivedMessage
                     var showDialog by remember { mutableStateOf(true) }
 
-                    var currentScreen by remember { mutableStateOf(ScreenState.AUTOMATION) }
+                    var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
                     var lastCommand by remember { mutableStateOf("") }
 
                     val cleanedMessage = message.trim().uppercase()
@@ -74,10 +74,9 @@ class MainActivity : ComponentActivity() {
                         if (cleanedMessage != lastCommand) {
                             lastCommand = cleanedMessage
                             currentScreen = when (cleanedMessage) {
-                                "-AON" -> ScreenState.AUTOMATION
-                                "-AFF" -> ScreenState.EMOTION
-                                " AFF" -> ScreenState.EMOTION
-                                else -> ScreenState.AUTOMATION
+                                "AON" -> ScreenState.AUTOMATION
+                                "AFF" -> ScreenState.EMOTION
+                                else -> currentScreen
                             }
                             Log.d("BLE", "Switched to screen: $currentScreen")
                         }

@@ -152,7 +152,7 @@ fun LiveEmotionDetectionScreen(
                     bitmap.recycle()
                 }
             }
-
+            Log.d("DEBUGGGGG", detectedEmotion)
             // Display results
             Text(
                 text = "Emotion: $detectedEmotion",

@@ -1,4 +1,4 @@
- package com.example.cobot.emotion_detection
+package com.example.cobot.emotion_detection
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -28,10 +28,13 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 
- // YUV to RGB converter helper class
+// YUV to RGB converter helper class
 class YuvToRgbConverter(private val context: Context, private val bitmap: Bitmap) {
     private val rs = android.renderscript.RenderScript.create(context)
-    private val scriptYuvToRgb = android.renderscript.ScriptIntrinsicYuvToRGB.create(rs, android.renderscript.Element.U8_4(rs))
+    private val scriptYuvToRgb = android.renderscript.ScriptIntrinsicYuvToRGB.create(
+        rs,
+        android.renderscript.Element.U8_4(rs)
+    )
 
     private var yuvBuffer: ByteBuffer? = null
     private var rgbBuffer: ByteBuffer? = null
@@ -58,7 +61,11 @@ class YuvToRgbConverter(private val context: Context, private val bitmap: Bitmap
             height = image.height
 
             rgbBuffer = ByteBuffer.allocateDirect(width * height * 4)
-            yuvMat = android.renderscript.Allocation.createSized(rs, android.renderscript.Element.U8(rs), totalSize)
+            yuvMat = android.renderscript.Allocation.createSized(
+                rs,
+                android.renderscript.Element.U8(rs),
+                totalSize
+            )
             rgbMat = android.renderscript.Allocation.createFromBitmap(rs, output)
         }
 
@@ -78,7 +85,11 @@ class YuvToRgbConverter(private val context: Context, private val bitmap: Bitmap
             val uvSize = image.planes[1].buffer.remaining() + image.planes[2].buffer.remaining()
             val uvBuffer = ByteArray(uvSize)
             image.planes[1].buffer.get(uvBuffer, 0, image.planes[1].buffer.remaining())
-            image.planes[2].buffer.get(uvBuffer, image.planes[1].buffer.remaining(), image.planes[2].buffer.remaining())
+            image.planes[2].buffer.get(
+                uvBuffer,
+                image.planes[1].buffer.remaining(),
+                image.planes[2].buffer.remaining()
+            )
             yuvBuffer?.put(uvBuffer)
         } else {
             yuvBuffer?.put(image.planes[1].buffer)
@@ -105,6 +116,7 @@ class YuvToRgbConverter(private val context: Context, private val bitmap: Bitmap
         rs.destroy()
     }
 }
+
 @OptIn(ExperimentalGetImage::class)
 fun imageProxyToBitmap(imageProxy: ImageProxy, context: Context): Bitmap {
     val image = imageProxy.image ?: throw IllegalStateException("Image proxy has no image")
@@ -158,6 +170,7 @@ fun loadModel(context: Context): Interpreter {
         throw RuntimeException("Error loading model: ${e.message}")
     }
 }
+
 fun createFaceLandmarker(context: Context): FaceLandmarker? {
     try {
         val baseOptions = BaseOptions.builder()
@@ -178,11 +191,17 @@ fun createFaceLandmarker(context: Context): FaceLandmarker? {
     }
 }
 
-fun processFaceWithLandmarker(faceLandmarker: FaceLandmarker?, mpImage: MPImage): FaceLandmarkerResult? {
+fun processFaceWithLandmarker(
+    faceLandmarker: FaceLandmarker?,
+    mpImage: MPImage
+): FaceLandmarkerResult? {
     return faceLandmarker?.detect(mpImage)
 }
 
-fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?,debugText: MutableState<String>): String {
+fun classifyEmotionFromBlendshapes(
+    blendshapeList: List<List<Category>>?,
+    debugText: MutableState<String>
+): String {
     val blendshapes = mutableMapOf<String, Float>()
     Log.d("Blendshapes", blendshapes.toString())
 
@@ -200,10 +219,14 @@ fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?,debugTe
     val eyeWide = ((blendshapes["eyeWideLeft"] ?: 0f) + (blendshapes["eyeWideRight"] ?: 0f)) / 2
     val mouthOpen = blendshapes["jawOpen"] ?: 0f
     val cheekPuff = blendshapes["cheekPuff"] ?: 0f
-    val eyeSquint = ((blendshapes["eyeSquintLeft"] ?: 0f) + (blendshapes["eyeSquintRight"] ?: 0f)) / 2
-    val mouthPress = ((blendshapes["mouthPressLeft"] ?: 0f) + (blendshapes["mouthPressRight"] ?: 0f)) / 2
+    val mouthShrugLower = blendshapes["mouthShrugLower"] ?: 0f
+    val eyeSquint =
+        ((blendshapes["eyeSquintLeft"] ?: 0f) + (blendshapes["eyeSquintRight"] ?: 0f)) / 2
+    val mouthPress =
+        ((blendshapes["mouthPressLeft"] ?: 0f) + (blendshapes["mouthPressRight"] ?: 0f)) / 2
     val angryScore = listOf(frown, browDown, eyeSquint, mouthPress).count { it > 0.1f }
-    val mouthFrown = ((blendshapes["mouthFrownLeft"] ?: 0f) + (blendshapes["mouthFrownRight"] ?: 0f)) / 2
+    val mouthFrown =
+        ((blendshapes["mouthFrownLeft"] ?: 0f) + (blendshapes["mouthFrownRight"] ?: 0f)) / 2
     val browInnerUp = blendshapes["browInnerUp"] ?: 0f
 
     debugText.value = """
@@ -219,71 +242,19 @@ fun classifyEmotionFromBlendshapes(blendshapeList: List<List<Category>>?,debugTe
     MouthFrown: ${"%.2f".format(mouthFrown)} 
     BrowInnerUp: ${"%.2f".format(browInnerUp)} 
     """.trimIndent()
+
+    Log.d("DEBUGGGGG", blendshapes.toString())
     return when {
-        smile > 0.3f  -> "Happy"
-        eyeSquint >=0.2f  -> "Angry"
-        mouthOpen > 0.2f || eyeWide >0.2f-> "Surprised"
-        mouthFrown > 0.2f || browInnerUp > 0.7f -> "Sad"
+        smile > 0.2f -> "Happy"
+        eyeSquint >= 0.4f -> "Angry"
+        mouthOpen > 0.2f -> "Surprised"
+        mouthShrugLower >0.7f -> "Sad"
         else -> "Neutral"
     }
+
 }
 
- fun createGestureRecognizer(
-     context: Context,
-     modelAssetPath: String = "models/gesture_recognizer.task"
- ): GestureRecognizer? {
-     return try {
-         val baseOptions = BaseOptions.builder()
-             .setModelAssetPath(modelAssetPath)
-             .build()
-         val options = GestureRecognizer.GestureRecognizerOptions.builder()
-             .setBaseOptions(baseOptions)
-             .setRunningMode(RunningMode.IMAGE)
-             .setNumHands(1)
-             .build()
-         GestureRecognizer.createFromOptions(context, options)
-     } catch (e: Exception) {
-         e.printStackTrace()
-         null
-     }
- }
 
- // Converts an ImageProxy (YUV) to MediaPipe MPImage for processing
- @OptIn(ExperimentalGetImage::class)
- fun imageProxyToMpImage(
-     imageProxy: ImageProxy,
-     context: Context
- ): MPImage {
-     val bitmap = imageProxyToBitmap(imageProxy, context)
-     // Build MPImage from Bitmap using BitmapImageBuilder
-     return BitmapImageBuilder(bitmap).build()
- }
-
- // Processes a single frame through the GestureRecognizer
- fun processGesture(
-     gestureRecognizer: GestureRecognizer?,
-     mpImage: MPImage
- ): GestureRecognizerResult? {
-     return gestureRecognizer?.recognize(mpImage)
- }
-
- // Simple classification based on highest-scoring category
- fun classifyGesture(
-     result: GestureRecognizerResult?,
-     debug: (String) -> Unit = {}
- ): String {
-     if (result == null || result.gestures().isEmpty()) {
-         debug("No gesture detected")
-         return "None"
-     }
-     // Flatten all detected categories
-     val categories = result.gestures().flatten()
-     // Log each category with score
-     categories.forEach { debug("${it.categoryName()}: ${"%.2f".format(it.score())}") }
-     // Pick the top one
-     val top = categories.maxByOrNull { it.score() }
-     return top?.categoryName() ?: "Unknown"
- }
 
 
 

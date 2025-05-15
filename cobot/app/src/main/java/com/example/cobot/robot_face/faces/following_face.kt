@@ -19,8 +19,8 @@ fun DrawScope.drawFollowingFace(
 
     // Eye movement based on direction
     val eyeMoveOffset = when (direction) {
-        "LEFT" -> -50f
-        "RIGHT" -> 50f
+        "LEFT" -> 50f
+        "RIGHT" -> -50f
         else -> 0f
     }
 
