@@ -225,9 +225,10 @@ fun classifyEmotionFromBlendshapes(
     val mouthPress =
         ((blendshapes["mouthPressLeft"] ?: 0f) + (blendshapes["mouthPressRight"] ?: 0f)) / 2
     val angryScore = listOf(frown, browDown, eyeSquint, mouthPress).count { it > 0.1f }
-    val mouthFrown =
-        ((blendshapes["mouthFrownLeft"] ?: 0f) + (blendshapes["mouthFrownRight"] ?: 0f)) / 2
+//    val mouthFrown =
+//        ((blendshapes["mouthFrownLeft"] ?: 0f) + (blendshapes["mouthFrownRight"] ?: 0f)) / 2
     val browInnerUp = blendshapes["browInnerUp"] ?: 0f
+    val mouthFrown = (blendshapes["mouthFrownLeft"]!! + blendshapes["mouthFrownRight"]!!) / 2f
 
     debugText.value = """
     Smile: ${"%.2f".format(smile)}
@@ -243,15 +244,31 @@ fun classifyEmotionFromBlendshapes(
     BrowInnerUp: ${"%.2f".format(browInnerUp)} 
     """.trimIndent()
 
-    Log.d("DEBUGGGGG", blendshapes.toString())
-    return when {
+    Log.d("DEBUGGGGG", debugText.value)
+    val emotion = when {
         smile > 0.2f -> "Happy"
-        eyeSquint >= 0.4f -> "Angry"
+        eyeSquint >= 0.35f -> "Angry"
         mouthOpen > 0.2f -> "Surprised"
-        mouthShrugLower >0.7f -> "Sad"
+        mouthShrugLower > 0.7f -> "Sad"
         else -> "Neutral"
     }
-
+    blendshapes["mouthSmileLeft"] = 0f
+    blendshapes["mouthSmileRight"] = 0f
+    blendshapes["mouthFrownLeft"] = 0f
+    blendshapes["mouthFrownRight"] = 0f
+    blendshapes["browDownLeft"] = 0f
+    blendshapes["browDownRight"] = 0f
+    blendshapes["browInnerUp"] = 0f
+    blendshapes["eyeWideLeft"] = 0f
+    blendshapes["eyeWideRight"] = 0f
+    blendshapes["jawOpen"] = 0f
+    blendshapes["cheekPuff"] = 0f
+    blendshapes["mouthShrugLower"] = 0f
+    blendshapes["eyeSquintLeft"] = 0f
+    blendshapes["eyeSquintRight"] = 0f
+    blendshapes["mouthPressLeft"] = 0f
+    blendshapes["mouthPressRight"] = 0f
+    return emotion
 }
 
 

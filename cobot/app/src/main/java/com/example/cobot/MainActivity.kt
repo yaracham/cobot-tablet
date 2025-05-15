@@ -75,7 +75,9 @@ class MainActivity : ComponentActivity() {
                             lastCommand = cleanedMessage
                             currentScreen = when (cleanedMessage) {
                                 "AON" -> ScreenState.AUTOMATION
+                                "-AON" -> ScreenState.AUTOMATION
                                 "AFF" -> ScreenState.EMOTION
+                                "-AFF" -> ScreenState.EMOTION
                                 else -> currentScreen
                             }
                             Log.d("BLE", "Switched to screen: $currentScreen")
