@@ -4,13 +4,28 @@ import android.graphics.RectF
 import android.os.Build
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -28,7 +43,7 @@ import java.util.concurrent.Executors
 
 
 @Composable
-fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
+fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper, onShowRobotFace: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var detectedPosition by remember { mutableStateOf("Detecting...") }
@@ -96,16 +111,6 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
                     style = Stroke(width = 4f)
                 )
             }
-//            poseLandmarks.forEach { landmark ->
-//                drawCircle(
-//                    color = Color.Green,
-//                    radius = 6f,
-//                    center = Offset(
-//                        x = landmark.x * size.width,
-//                        y = landmark.y * size.height
-//                    )
-//                )
-//            }
         }
 
         // Animated eyes overlay
@@ -132,7 +137,7 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
         ) {
             Card(
                 modifier = Modifier
-                    .padding(bottom = 60.dp , end = 20.dp)
+                    .padding(bottom = 60.dp, end = 20.dp)
                     .fillMaxWidth(0.8f),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
@@ -149,7 +154,7 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper) {
                 )
             }
             FilledIconButton(
-                onClick = { /*TODO*/ },
+                onClick = { onShowRobotFace() },
                 modifier = Modifier
                     .size(60.dp)
 //                    .clip(RoundedCornerShape(2.dp))

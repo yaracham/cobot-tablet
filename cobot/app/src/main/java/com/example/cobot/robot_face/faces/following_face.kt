@@ -9,21 +9,32 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 
-fun DrawScope.drawNeutralFace(centerX: Float, centerY: Float, blink: Float, eyeCurve: Float, mouthRadius: Float) {
+fun DrawScope.drawFollowingFace(
+    centerX: Float,
+    centerY: Float,
+    direction: String
+) {
     val eyeSpacing = 130f
     val eyeTop = centerY - 240f
 
-    // Eyes with blink animation
+    // Eye movement based on direction
+    val eyeMoveOffset = when (direction) {
+        "LEFT" -> -50f
+        "RIGHT" -> 50f
+        else -> 0f
+    }
+
+    val fullHeight = 220f
+
+    // Draw static eyes (no blinking)
     for (side in listOf(-1f, 1f)) {
-        val x = centerX + side * eyeSpacing
-        val fullHeight = 220f
-        val visibleHeight = fullHeight * blink
-        val topOffset = eyeTop + (fullHeight - visibleHeight) / 2
+        val x = centerX + side * eyeSpacing + eyeMoveOffset
+        val topOffset = eyeTop
 
         drawRoundRect(
             color = Color.Blue,
             topLeft = Offset(x - 20f, topOffset),
-            size = Size(80f, visibleHeight),
+            size = Size(80f, fullHeight),
             cornerRadius = CornerRadius(50f, 50f)
         )
     }
@@ -41,6 +52,6 @@ fun DrawScope.drawNeutralFace(centerX: Float, centerY: Float, blink: Float, eyeC
     drawPath(
         path = mouth,
         color = Color.Blue,
-        style = Stroke(width = 30f, cap = StrokeCap.Round) // rounded stroke ends
+        style = Stroke(width = 30f, cap = StrokeCap.Round)
     )
 }

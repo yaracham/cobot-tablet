@@ -21,7 +21,7 @@ import com.example.cobot.ui.theme.CobotTheme
 
 class MainActivity : ComponentActivity() {
     enum class ScreenState {
-        AUTOMATION, EMOTION
+        AUTOMATION, EMOTION, AUTOMATIONFACE
     }
 
     private lateinit var hm10Helper: HM10BluetoothHelper
@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
                     val message by hm10Helper.receivedMessage
                     var showDialog by remember { mutableStateOf(true) }
 
-                    var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
+                    var currentScreen by remember { mutableStateOf(ScreenState.AUTOMATION) }
                     var lastCommand by remember { mutableStateOf("") }
 
                     val cleanedMessage = message.trim().uppercase()
@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                                 "-AON" -> ScreenState.AUTOMATION
                                 "-AFF" -> ScreenState.EMOTION
                                 " AFF" -> ScreenState.EMOTION
-                                else -> currentScreen // Don't change screen for dashes or unknown commands
+                                else -> ScreenState.AUTOMATION
                             }
                             Log.d("BLE", "Switched to screen: $currentScreen")
                         }
@@ -97,7 +97,9 @@ class MainActivity : ComponentActivity() {
                         AppView(
                             screen = currentScreen,
                             hM10BluetoothHelper = hm10Helper,
-                            onRequestConnect = { showDialog = true }
+                            onRequestConnect = { showDialog = true },
+                            onShowRobotFace = { currentScreen = ScreenState.AUTOMATIONFACE },
+                            onShowRobotCamera = { currentScreen = ScreenState.AUTOMATION }
                         )
                     }
                 }

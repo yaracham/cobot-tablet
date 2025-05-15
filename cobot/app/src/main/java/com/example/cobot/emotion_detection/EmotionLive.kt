@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import com.example.cobot.bluetooth.HM10BluetoothHelper
-import com.example.cobot.robot_face.GestureRecognizerHelper
+import com.example.cobot.gesture_detection.GestureRecognizerHelper
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import kotlinx.coroutines.delay
