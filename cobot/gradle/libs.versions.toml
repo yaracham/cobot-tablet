@@ -1,6 +1,7 @@
 [versions]
 agp = "8.5.0"
 cameraCoreVersion = "1.4.2"
+datastorePreferences = "1.1.6"
 googleTasksVision = "0.10.14"
 googleTasksVisionVersion = "0.10.7"
 gradle = "14.0.2"
@@ -10,6 +11,8 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+kotlinxSerializationCore = "1.6.3"
+kotlinxSerializationJson = "1.6.3"
 lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
 composeBom = "2024.04.01"
@@ -36,6 +39,7 @@ androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.r
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCoreVersion" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraCoreVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCoreVersion" }
 gradle = { module = "com.chaquo.python:gradle", version.ref = "gradle" }
 gradle-download-task = { module = "de.undercouch:gradle-download-task", version.ref = "gradleDownloadTask" }
@@ -52,6 +56,8 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 pose = { module = "com.google.mediapipe:pose", version.ref = "pose" }
 tasks-core = { module = "com.google.mediapipe:tasks-core", version.ref = "tasksCore" }
 tasks-vision = { module = "com.google.mediapipe:tasks-vision", version.ref = "tasksVision" }

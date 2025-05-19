@@ -24,17 +24,16 @@ fun AppView(
             onShowRobotFace
         )
 
-//        MainActivity.ScreenState.EMOTION -> EmotionRobotFaceScreen(
-//            hM10BluetoothHelper,
-//            onRequestConnect = onRequestConnect
-//        )
+        MainActivity.ScreenState.EMOTION -> EmotionRobotFaceScreen(
+            hM10BluetoothHelper,
+            onRequestConnect = onRequestConnect
+        )
 
-
-        MainActivity.ScreenState.AUTOMATIONFACE -> AutomationRobotFaceScreen(
+        MainActivity.ScreenState.AUTOMATION_FACE -> AutomationRobotFaceScreen(
             hM10BluetoothHelper = hM10BluetoothHelper,
             onShowRobotCamera
         )
 
-        MainActivity.ScreenState.EMOTION -> ColorGameScreen()
+        MainActivity.ScreenState.GAME -> ColorGameScreen(hm10helper = hM10BluetoothHelper)
     }
 }

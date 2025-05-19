@@ -15,13 +15,12 @@ import androidx.compose.ui.Modifier
 import com.example.cobot.bluetooth.BluetoothConnectionDialog
 import com.example.cobot.bluetooth.BluetoothConnectionState
 import com.example.cobot.bluetooth.HM10BluetoothHelper
-import com.example.cobot.emotion_detection.LiveEmotionDetectionScreen
 import com.example.cobot.ui.theme.CobotTheme
 
 
 class MainActivity : ComponentActivity() {
     enum class ScreenState {
-        AUTOMATION, EMOTION, AUTOMATIONFACE
+        AUTOMATION, EMOTION, AUTOMATION_FACE, GAME
     }
 
     private lateinit var hm10Helper: HM10BluetoothHelper
@@ -65,7 +64,7 @@ class MainActivity : ComponentActivity() {
                     val message by hm10Helper.receivedMessage
                     var showDialog by remember { mutableStateOf(true) }
 
-                    var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
+                    var currentScreen by remember { mutableStateOf(ScreenState.GAME) }
                     var lastCommand by remember { mutableStateOf("") }
 
                     val cleanedMessage = message.trim().uppercase()
@@ -78,17 +77,21 @@ class MainActivity : ComponentActivity() {
                                 "-AON" -> ScreenState.AUTOMATION
                                 "AFF" -> ScreenState.EMOTION
                                 "-AFF" -> ScreenState.EMOTION
+                                "GO" -> ScreenState.GAME
+                                "-GO" -> ScreenState.GAME
+                                "GF" -> ScreenState.EMOTION
+                                "-GF" -> ScreenState.EMOTION
                                 else -> currentScreen
                             }
                             Log.d("BLE", "Switched to screen: $currentScreen")
                         }
                     }
-                    LaunchedEffect(state) {
-                        if (state != BluetoothConnectionState.Connected) {
-                            currentScreen = ScreenState.EMOTION
-                            Log.d("BLE", "Bluetooth disconnected – switching to EMOTION screen")
-                        }
-                    }
+//                    LaunchedEffect(state) {
+//                        if (state != BluetoothConnectionState.Connected) {
+//                            currentScreen = ScreenState.EMOTION
+//                            Log.d("BLE", "Bluetooth disconnected – switching to EMOTION screen")
+//                        }
+//                    }
 
                     Column(
                         modifier = Modifier
@@ -105,7 +108,7 @@ class MainActivity : ComponentActivity() {
                             screen = currentScreen,
                             hM10BluetoothHelper = hm10Helper,
                             onRequestConnect = { showDialog = true },
-                            onShowRobotFace = { currentScreen = ScreenState.AUTOMATIONFACE },
+                            onShowRobotFace = { currentScreen = ScreenState.AUTOMATION_FACE },
                             onShowRobotCamera = { currentScreen = ScreenState.AUTOMATION }
                         )
                     }
