@@ -19,14 +19,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
+import androidx.compose.ui.unit.sp
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
-
+import com.example.cobot.color_game.GameHelper
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ColorGameScreen(
@@ -37,8 +38,7 @@ fun ColorGameScreen(
     var playerName by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-
-
+    val gameHelper = GameHelper()
     LaunchedEffect(Unit) {
         scores.clear()
         scores.addAll(getPlayerScores(context))
@@ -54,12 +54,12 @@ fun ColorGameScreen(
     )
     val commands = listOf("CO", "CG", "CB", "CY", "CR", "CP")
 
-    var level by remember { mutableIntStateOf(1) }          // 1…10
+    var level by remember { mutableIntStateOf(1) }
     val sequence = remember { mutableStateListOf<Int>() }
     var userIndex by remember { mutableIntStateOf(0) }
     var tapsRemaining by remember { mutableIntStateOf(0) }
     var inputEnabled by remember { mutableStateOf(false) }
-    var message by remember { mutableStateOf("") }       // "Level up!", "Game Over", etc.
+    var message by remember { mutableStateOf("") }
     var gameOver by remember { mutableStateOf(false) }
 
     val highlightStates = remember { List(6) { mutableStateOf(false) } }
@@ -77,13 +77,19 @@ fun ColorGameScreen(
         inputEnabled = false
         delay(500)
 
-        val next = Random.nextInt(6)
+        var next = Random.nextInt(6)
+        while (sequence.isNotEmpty() && next == sequence.last()) {
+            next = Random.nextInt(6)
+        }
         sequence.add(next)
 
-        Log.d("GAMEE", commands[next])
-        hm10helper.sendMessage(commands[next] + "\r\n")
-        delay(700)
-        hm10helper.sendMessage("CF\r\n")
+        for (index in sequence) {
+            Log.d("GAMEE", commands[index])
+            hm10helper.sendMessage(commands[index] + "\r\n")
+            delay(700) // Delay between each color command
+        }
+        hm10helper.sendMessage("CF\r\n") // Flash off or reset between colors
+        delay(200) // Short pause before next
 
         tapsRemaining = sequence.size
         userIndex = 0
@@ -99,109 +105,119 @@ fun ColorGameScreen(
         }
     }
 
-
-    val radiusDp = 150.dp
-    val circleSize = 100.dp
-    val density = LocalDensity.current
-    val radiusPx = with(density) { radiusDp.toPx() }
-
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFAFAFA)),
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.TopCenter
     ) {
-        Spacer(Modifier.height(90.dp))
+        val screenWidth = maxWidth
+        val radiusDp = screenWidth * 0.35f
+        val circleSize = screenWidth * 0.22f
+        val radiusPx = with(LocalDensity.current) { radiusDp.toPx() }
 
-        Text("Level $level", style = MaterialTheme.typography.displayLarge)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Guess the colors in the correct order!",
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Box(
+        Column(
             modifier = Modifier
-                .height(120.dp)
-                .padding(top = 8.dp),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (!inputEnabled && level <= 10 && message.startsWith("Game Over")) {
-                Button(
-                    onClick = {
-                        level = 1
-                        message = "Restarting…"
-                        sequence.clear()
-                        gameOver = false
-                    },
-                    modifier = Modifier
-                        .height(64.dp)
-                        .width(200.dp)
-                ) {
-                    Text(
-                        "Restart",
-                        style = MaterialTheme.typography.headlineSmall
+            Spacer(Modifier.height(32.dp))
+
+            Text("Level $level", style = MaterialTheme.typography.displayLarge)
+            Spacer(Modifier.height(8.dp))
+            Text("Guess the colors in the correct order!", style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(8.dp))
+            Text(message, style = MaterialTheme.typography.bodyLarge)
+
+            Box(
+                modifier = Modifier
+                    .height(120.dp)
+                    .padding(top = 8.dp),
+
+                contentAlignment = Alignment.Center
+            ) {
+                if (!inputEnabled && message.startsWith("Game Over")) {
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                sequence.clear()
+                                userIndex = 0
+                                tapsRemaining = 0
+                                gameOver = false
+                                delay(200)
+                                level ++
+                            }
+                        },
+                        modifier = Modifier
+                            .height(64.dp)
+                            .width(200.dp)
+                    ) {
+                        Text("Restart", style = MaterialTheme.typography.headlineSmall)
+                    }
+                }
+            }
+
+            Text(
+                text = "Taps left: $tapsRemaining",
+                style = MaterialTheme.typography.displaySmall,
+                color = Color.DarkGray,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(radiusDp * 2 + circleSize)
+                    .padding(bottom = 32.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                for (i in 0 until 6) {
+                    val angleRad = Math.toRadians((i * 60 - 90).toDouble())
+                    val xOffset = (cos(angleRad) * radiusPx).toInt()
+                    val yOffset = (sin(angleRad) * radiusPx).toInt()
+
+                    Box(
+                        modifier = Modifier
+                            .offset { IntOffset(xOffset, yOffset) }
+                            .size(circleSize)
+                            .clip(CircleShape)
+                            .background(if (highlightStates[i].value) colors[i] else Color.Transparent)
+                            .border(4.dp, colors[i], CircleShape)
+                            .clickable(enabled = inputEnabled) {
+                                if (!inputEnabled) return@clickable
+
+                                if (i == sequence[userIndex]) {
+                                    highlightStates[i].value = true
+                                    userIndex++
+                                    tapsRemaining--
+                                    message = "Taps left: $tapsRemaining"
+                                    hm10helper.sendMessage(commands[i] + "\r\n")
+
+                                    if (userIndex >= sequence.size) {
+                                        inputEnabled = false
+                                        message = "Correct! Next level…"
+
+                                        coroutineScope.launch {
+                                            gameHelper.sendWinningFlashSequence(hm10helper)
+                                            level += 1
+                                        }
+                                    }
+                                } else {
+                                    inputEnabled = false
+                                    message = "Game Over! Tap to restart."
+                                    gameOver = true
+                                    coroutineScope.launch {
+                                        gameHelper.sendLoosing(hm10helper)
+                                    }
+                                }
+                            }
                     )
                 }
             }
+            Spacer(Modifier.height(32.dp))
         }
-
-        Text(
-            text = "Taps left: $tapsRemaining",
-            style = MaterialTheme.typography.displaySmall,
-            color = Color.DarkGray,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Box(
-            modifier = Modifier
-                .size(2 * radiusDp + circleSize)
-                .padding(bottom = 32.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            for (i in 0 until 6) {
-                val angleRad = Math.toRadians((i * 60 - 90).toDouble())
-                val xOffset = (cos(angleRad) * radiusPx).toInt()
-                val yOffset = (sin(angleRad) * radiusPx).toInt()
-
-                Box(
-                    modifier = Modifier
-                        .offset { IntOffset(xOffset, yOffset) }
-                        .size(circleSize)
-                        .clip(CircleShape)
-                        .background(if (highlightStates[i].value) colors[i] else Color.Transparent)
-                        .border(8.dp, colors[i], CircleShape)
-                        .clickable(enabled = inputEnabled) {
-                            if (!inputEnabled) return@clickable
-
-                            if (i == sequence[userIndex]) {
-                                highlightStates[i].value = true
-                                userIndex++
-                                tapsRemaining--
-                                message = "Taps left: $tapsRemaining"
-
-                                if (userIndex >= sequence.size) {
-                                    inputEnabled = false
-                                    message = "Correct! Next level…"
-                                    level += 1
-                                }
-                            } else {
-                                inputEnabled = false
-                                message = "Game Over! Tap to restart."
-                                gameOver = true
-                            }
-                        }
-                )
-            }
-        }
-
-        Spacer(Modifier.height(32.dp))
     }
+
     if (showDialog) {
         AlertDialog(
             onDismissRequest = {},
@@ -211,10 +227,10 @@ fun ColorGameScreen(
                         savePlayerScore(context, PlayerScore(playerName, level))
                         scores.clear()
                         scores.addAll(getPlayerScores(context))
-                        level = 1
-                        message = "Restarting…"
-                        sequence.clear()
-                        gameOver = false
+//                        level = 1
+//                        message = "Restarting…"
+//                        sequence.clear()
+//                        gameOver = false
                         playerName = ""
                         showDialog = false
                     }
@@ -266,15 +282,8 @@ fun ColorGameScreen(
                             }
                         }
                     }
-
                 }
             }
         )
     }
-
-
 }
-
-
-
-
