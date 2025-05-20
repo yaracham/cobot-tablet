@@ -148,28 +148,6 @@ fun preprocessImage(bitmap: Bitmap): ByteBuffer {
     }
 }
 
-fun loadModel(context: Context): Interpreter {
-    try {
-        val assetManager = context.assets
-        val modelPath = "models/keypoint_classifier.tflite"
-        val fileDescriptor = assetManager.openFd(modelPath)
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        val mappedByteBuffer = fileChannel.map(
-            FileChannel.MapMode.READ_ONLY,
-            startOffset,
-            declaredLength
-        )
-
-        val options = Interpreter.Options().apply { numThreads = 4 }
-        return Interpreter(mappedByteBuffer, options)
-    } catch (e: Exception) {
-        Log.e("ModelLoading", "Error loading model: ${e.message}", e)
-        throw RuntimeException("Error loading model: ${e.message}")
-    }
-}
 
 fun createFaceLandmarker(context: Context): FaceLandmarker? {
     try {

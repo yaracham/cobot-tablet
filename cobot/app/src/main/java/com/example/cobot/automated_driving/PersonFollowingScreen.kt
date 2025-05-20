@@ -2,6 +2,7 @@ package com.example.cobot.automated_driving
 
 import android.graphics.RectF
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -65,7 +66,8 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper, onShowRobotF
     LaunchedEffect(Unit) {
         while (true) {
             val box = boundingBox
-            val command = if (box != null && !isBoxTooSmall(box)) {
+            val tooClose = isPersonTooClose(poseLandmarks)
+            val command = if (box != null && !isBoxTooSmall(box) && !tooClose) {
                 when (detectedPosition) {
                     "RIGHT" -> "FR\r\n"
                     "LEFT" -> "FL\r\n"
@@ -79,6 +81,8 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper, onShowRobotF
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 hM10BluetoothHelper.sendMessage(command)
+                Log.d("COMMAND", "Sending command: $command")
+
             }
             delay(1000)
         }
@@ -180,16 +184,6 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper, onShowRobotF
                         .padding(8.dp)
                 )
             }
-
-            // Position indicator
-
-//            Text(
-//                text = "Distance: $estimatedDistance",
-//                modifier = Modifier.padding(4.dp).fillMaxWidth(),
-//                fontSize = 18.sp,
-//                textAlign = TextAlign.Center,
-//                color = Color.Black
-//            )
         }
     }
 }

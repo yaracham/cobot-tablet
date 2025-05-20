@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,6 +39,10 @@ fun ColorGameScreen(
     var playerName by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val highScore by remember(scores) {
+        mutableStateOf(scores.maxOfOrNull { it.score } ?: 0)
+    }
+
     val gameHelper = GameHelper()
     LaunchedEffect(Unit) {
         scores.clear()
@@ -62,14 +67,11 @@ fun ColorGameScreen(
     var message by remember { mutableStateOf("") }
     var gameOver by remember { mutableStateOf(false) }
 
+    var gameStarted by remember { mutableStateOf(false) }
     val highlightStates = remember { List(6) { mutableStateOf(false) } }
 
-    LaunchedEffect(level) {
-        if (level > 10) {
-            message = "🎉 You beat all levels!"
-            inputEnabled = false
-            return@LaunchedEffect
-        }
+    LaunchedEffect(level, gameStarted) {
+        if (!gameStarted) return@LaunchedEffect
 
         highlightStates.forEach { it.value = false }
 
@@ -82,14 +84,15 @@ fun ColorGameScreen(
             next = Random.nextInt(6)
         }
         sequence.add(next)
+        Log.d("GAME", "Current sequence: ${sequence.joinToString()}")
 
         for (index in sequence) {
             Log.d("GAMEE", commands[index])
             hm10helper.sendMessage(commands[index] + "\r\n")
-            delay(700) // Delay between each color command
+            delay(700)
         }
-        hm10helper.sendMessage("CF\r\n") // Flash off or reset between colors
-        delay(200) // Short pause before next
+        hm10helper.sendMessage("CF\r\n")
+        delay(200)
 
         tapsRemaining = sequence.size
         userIndex = 0
@@ -104,36 +107,57 @@ fun ColorGameScreen(
             scores.addAll(getPlayerScores(context))
         }
     }
+    if (!gameStarted) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFAFAFA)),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                onClick = {
+                    gameStarted = true
+                    level = 1
+                    message = ""
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2196F3) // Blue
+                ),
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(60.dp)
+            ) {
+                Text("Start Game", color = Color.White, style = MaterialTheme.typography.headlineSmall)
+            }
+        }
+        return
+    }
 
-    BoxWithConstraints(
+    val radiusDp = 150.dp
+    val circleSize = 100.dp
+    val density = LocalDensity.current
+    val radiusPx = with(density) { radiusDp.toPx() }
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFAFAFA)),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        val screenWidth = maxWidth
-        val radiusDp = screenWidth * 0.35f
-        val circleSize = screenWidth * 0.22f
-        val radiusPx = with(LocalDensity.current) { radiusDp.toPx() }
+        horizontalAlignment = Alignment.CenterHorizontally
+    )  {
+        Spacer(Modifier.height(90.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(Modifier.height(32.dp))
 
             Text("Level $level", style = MaterialTheme.typography.displayLarge)
             Spacer(Modifier.height(8.dp))
             Text("Guess the colors in the correct order!", style = MaterialTheme.typography.bodyLarge)
             Spacer(Modifier.height(8.dp))
             Text(message, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.weight(1f))
 
             Box(
                 modifier = Modifier
-                    .height(120.dp)
-                    .padding(top = 8.dp),
+                    .height(60.dp)
+                    .padding(top = 2.dp),
 
                 contentAlignment = Alignment.Center
             ) {
@@ -141,12 +165,13 @@ fun ColorGameScreen(
                     Button(
                         onClick = {
                             coroutineScope.launch {
+                                level = 1
                                 sequence.clear()
                                 userIndex = 0
                                 tapsRemaining = 0
                                 gameOver = false
-                                delay(200)
-                                level ++
+                                message = ""
+                                gameStarted = true
                             }
                         },
                         modifier = Modifier
@@ -157,19 +182,19 @@ fun ColorGameScreen(
                     }
                 }
             }
-
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Taps left: $tapsRemaining",
                 style = MaterialTheme.typography.displaySmall,
                 color = Color.DarkGray,
-                modifier = Modifier.padding(bottom = 16.dp)
             )
 
+        Spacer(modifier = Modifier.weight(1f))
             Box(
                 modifier = Modifier
-                    .size(radiusDp * 2 + circleSize)
-                    .padding(bottom = 32.dp),
-                contentAlignment = Alignment.BottomCenter
+                    .size(2 * radiusDp + circleSize)
+                    .height(280.dp),
+                contentAlignment = Alignment.Center
             ) {
                 for (i in 0 until 6) {
                     val angleRad = Math.toRadians((i * 60 - 90).toDouble())
@@ -182,7 +207,7 @@ fun ColorGameScreen(
                             .size(circleSize)
                             .clip(CircleShape)
                             .background(if (highlightStates[i].value) colors[i] else Color.Transparent)
-                            .border(4.dp, colors[i], CircleShape)
+                            .border(8.dp, colors[i], CircleShape)
                             .clickable(enabled = inputEnabled) {
                                 if (!inputEnabled) return@clickable
 
@@ -195,13 +220,24 @@ fun ColorGameScreen(
 
                                     if (userIndex >= sequence.size) {
                                         inputEnabled = false
-                                        message = "Correct! Next level…"
 
-                                        coroutineScope.launch {
-                                            gameHelper.sendWinningFlashSequence(hm10helper)
-                                            level += 1
+                                        if (level + 1 > highScore) {
+                                            message = "🎉 New High Score!"
+                                            coroutineScope.launch {
+                                                gameHelper.sendHighScoreCelebration(hm10helper)
+                                                delay(800)
+                                                level += 1
+                                            }
+                                        } else {
+                                            message = "Correct! Next level…"
+                                            coroutineScope.launch {
+                                                gameHelper.sendWinningFlashSequence(hm10helper)
+                                                delay(800)
+                                                level += 1
+                                            }
                                         }
                                     }
+
                                 } else {
                                     inputEnabled = false
                                     message = "Game Over! Tap to restart."
@@ -214,75 +250,28 @@ fun ColorGameScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(32.dp))
-        }
+        Spacer(Modifier.height(32.dp))
+
     }
 
     if (showDialog) {
-        AlertDialog(
-            onDismissRequest = {},
-            confirmButton = {
-                TextButton(onClick = {
-                    coroutineScope.launch {
-                        savePlayerScore(context, PlayerScore(playerName, level))
-                        scores.clear()
-                        scores.addAll(getPlayerScores(context))
-//                        level = 1
-//                        message = "Restarting…"
-//                        sequence.clear()
-//                        gameOver = false
-                        playerName = ""
-                        showDialog = false
-                    }
-                }) {
-                    Text("Submit")
+        GameOverDialog(
+            playerName = playerName,
+            level = level,
+            scores = scores,
+            onNameChange = { playerName = it },
+            onSave = {
+                coroutineScope.launch {
+                    savePlayerScore(context, PlayerScore(playerName, level))
+                    scores.clear()
+                    scores.addAll(getPlayerScores(context))
+                    playerName = ""
+                    showDialog = false
                 }
             },
-            title = { Text("Game Over") },
-            text = {
-                Column {
-                    Text("Enter your name to save your score:")
-                    OutlinedTextField(
-                        value = playerName,
-                        onValueChange = { playerName = it },
-                        label = { Text("Name") }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("Your score: $level")
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("Previous Scores:")
-                    Column {
-                        scores.sortedByDescending { it.score }.forEachIndexed { index, it ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (index == 0) Color(0xFFFFF9C4) else MaterialTheme.colorScheme.surface
-                                ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = it.name,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = if (index == 0) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                    Text(
-                                        text = "Level ${it.score}",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = if (index == 0) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+            onCancel = {
+                playerName = ""
+                showDialog = false
             }
         )
     }
