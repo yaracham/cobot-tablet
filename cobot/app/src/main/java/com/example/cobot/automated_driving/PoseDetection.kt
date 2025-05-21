@@ -69,7 +69,4 @@ fun estimateDistance(boundingBox: RectF): String {
     }
 }
 
-fun isPersonTooClose(landmarks: List<SimpleLandmark>, zThreshold: Float = -0.15f): Boolean {
-    val nose = landmarks.getOrNull(0) ?: return false // If no nose, assume not too close
-    return nose.z < zThreshold
-}
+

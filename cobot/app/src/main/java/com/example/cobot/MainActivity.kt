@@ -67,31 +67,31 @@ class MainActivity : ComponentActivity() {
                     var currentScreen by remember { mutableStateOf(ScreenState.EMOTION) }
                     var lastCommand by remember { mutableStateOf("") }
 
-                    val cleanedMessage = message.trim().uppercase()
+                    val cleanedMessage = message.trim()
 
                     LaunchedEffect(cleanedMessage) {
                         if (cleanedMessage != lastCommand) {
                             lastCommand = cleanedMessage
-                            currentScreen = when (cleanedMessage) {
-                                "AON" -> ScreenState.AUTOMATION
-                                "-AON" -> ScreenState.AUTOMATION
-                                "AFF" -> ScreenState.EMOTION
-                                "-AFF" -> ScreenState.EMOTION
-                                "GON" -> ScreenState.GAME
-                                "-GON" -> ScreenState.GAME
-                                "GFF" -> ScreenState.EMOTION
-                                "-GFF" -> ScreenState.EMOTION
+
+                            currentScreen = when {
+                                cleanedMessage.contains("AON") -> ScreenState.AUTOMATION
+                                cleanedMessage.contains("AFF") -> ScreenState.EMOTION
+                                cleanedMessage.contains("GON") -> ScreenState.GAME
+                                cleanedMessage.contains("GFF") -> ScreenState.EMOTION
                                 else -> currentScreen
                             }
+
                             Log.d("BLE", "Switched to screen: $currentScreen")
                         }
                     }
-//                    LaunchedEffect(state) {
-//                        if (state != BluetoothConnectionState.Connected) {
-//                            currentScreen = ScreenState.EMOTION
-//                            Log.d("BLE", "Bluetooth disconnected – switching to EMOTION screen")
-//                        }
-//                    }
+
+                    LaunchedEffect(state) {
+                        if (state != BluetoothConnectionState.Connected) {
+                            currentScreen = ScreenState.EMOTION
+                            Log.d("BLE", "Bluetooth disconnected – switching to EMOTION screen")
+                        }
+                    }
+
 
                     Column(
                         modifier = Modifier
@@ -115,8 +115,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-
     }
 }
 

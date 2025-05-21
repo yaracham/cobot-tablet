@@ -66,8 +66,7 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper, onShowRobotF
     LaunchedEffect(Unit) {
         while (true) {
             val box = boundingBox
-            val tooClose = isPersonTooClose(poseLandmarks)
-            val command = if (box != null && !isBoxTooSmall(box) && !tooClose) {
+            val command = if (box != null && !isBoxTooSmall(box) ) {
                 when (detectedPosition) {
                     "RIGHT" -> "FR\r\n"
                     "LEFT" -> "FL\r\n"

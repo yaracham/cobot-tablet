@@ -119,8 +119,9 @@ fun EmotionRobotFaceScreen(
                 if (cmd.isNotEmpty()) hM10BluetoothHelper.sendMessage(cmd)
                 Log.d("EMOTIONCMD", cmd)
                 delay(dur)
-                // clear override so live detection resumes
+
                 emotionOverride = null
+                detectedEmotion = "Neutral"
             }
             delay(500)
         }

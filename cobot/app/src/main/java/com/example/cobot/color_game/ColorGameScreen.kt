@@ -1,5 +1,6 @@
 package com.example.cobot.color_game
 
+import android.media.MediaPlayer
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -29,6 +30,8 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 import com.example.cobot.color_game.GameHelper
+import com.example.cobot.R
+
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ColorGameScreen(
@@ -39,9 +42,6 @@ fun ColorGameScreen(
     var playerName by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-    val highScore by remember(scores) {
-        mutableStateOf(scores.maxOfOrNull { it.score } ?: 0)
-    }
 
     val gameHelper = GameHelper()
     LaunchedEffect(Unit) {
@@ -53,7 +53,7 @@ fun ColorGameScreen(
         Color(0xFFFF9800), // 0 = Orange
         Color(0xFF4CAF50), // 1 = Green
         Color(0xFF00BCD4), // 2 = Blue
-        Color(0xFFFFFF00), // 3 = Yellow
+        Color(0xFFFF00FF), // 3 = Yellow
         Color(0xFFF44336), // 4 = Red
         Color(0xFF800080)  // 5 = Purple
     )
@@ -62,17 +62,27 @@ fun ColorGameScreen(
     var level by remember { mutableIntStateOf(1) }
     val sequence = remember { mutableStateListOf<Int>() }
     var userIndex by remember { mutableIntStateOf(0) }
-    var tapsRemaining by remember { mutableIntStateOf(0) }
+    var tapsRemaining by remember { mutableIntStateOf(1) }
     var inputEnabled by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
     var gameOver by remember { mutableStateOf(false) }
-
+    var restart by remember { mutableStateOf(false) }
     var gameStarted by remember { mutableStateOf(false) }
     val highlightStates = remember { List(6) { mutableStateOf(false) } }
 
-    LaunchedEffect(level, gameStarted) {
-        if (!gameStarted) return@LaunchedEffect
+    fun resetGame() {
+        level = 1
+        sequence.clear()
+        userIndex = 0
+        tapsRemaining = 1
+        message = ""
+        gameOver = false
+        restart = true
+        highlightStates.forEach { it.value = false }
+    }
 
+    LaunchedEffect(level, gameStarted,restart) {
+        if (!gameStarted) return@LaunchedEffect
         highlightStates.forEach { it.value = false }
 
         message = "Level $level"
@@ -163,17 +173,7 @@ fun ColorGameScreen(
             ) {
                 if (!inputEnabled && message.startsWith("Game Over")) {
                     Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                level = 1
-                                sequence.clear()
-                                userIndex = 0
-                                tapsRemaining = 0
-                                gameOver = false
-                                message = ""
-                                gameStarted = true
-                            }
-                        },
+                        onClick = { resetGame() },
                         modifier = Modifier
                             .height(64.dp)
                             .width(200.dp)
@@ -221,10 +221,11 @@ fun ColorGameScreen(
                                     if (userIndex >= sequence.size) {
                                         inputEnabled = false
 
-                                        if (level + 1 > highScore) {
+                                        val currentHighScore = scores.maxOfOrNull { it.score } ?: 0
+                                        if (level + 1 > currentHighScore) {
                                             message = "🎉 New High Score!"
                                             coroutineScope.launch {
-                                                gameHelper.sendHighScoreCelebration(hm10helper)
+                                                gameHelper.sendWinningFlashSequence(hm10helper)
                                                 delay(800)
                                                 level += 1
                                             }
@@ -232,6 +233,7 @@ fun ColorGameScreen(
                                             message = "Correct! Next level…"
                                             coroutineScope.launch {
                                                 gameHelper.sendWinningFlashSequence(hm10helper)
+                                                Log.d("GAME", "WINNING")
                                                 delay(800)
                                                 level += 1
                                             }
@@ -240,11 +242,35 @@ fun ColorGameScreen(
 
                                 } else {
                                     inputEnabled = false
+                                    val currentHighScore = scores.maxOfOrNull { it.score } ?: 0
+
+                                    coroutineScope.launch {
+                                        if (level > currentHighScore) {
+                                            gameHelper.sendHighScoreCelebration(hm10helper)
+                                            val mediaPlayer = MediaPlayer.create(context, R.raw.highscore)
+                                            mediaPlayer.start()
+
+                                            // Optional: clean up
+                                            mediaPlayer.setOnCompletionListener {
+                                                it.release()
+                                            }
+                                            Log.d("GAME", "LOSS: highscore")
+                                            delay(500)
+                                        }
+                                        else {
+                                            gameHelper.sendLoosing(hm10helper)
+                                            val mediaPlayer = MediaPlayer.create(context, R.raw.gameover)
+                                            mediaPlayer.start()
+
+                                            // Optional: clean up
+                                            mediaPlayer.setOnCompletionListener {
+                                                it.release()
+                                            }
+                                            Log.d("GAME", "LOSS: Player failed at level $level")
+                                        }
+                                    }
                                     message = "Game Over! Tap to restart."
                                     gameOver = true
-                                    coroutineScope.launch {
-                                        gameHelper.sendLoosing(hm10helper)
-                                    }
                                 }
                             }
                     )
@@ -276,3 +302,4 @@ fun ColorGameScreen(
         )
     }
 }
+

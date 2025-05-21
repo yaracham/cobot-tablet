@@ -27,8 +27,8 @@ class GameHelper {
     }
     @RequiresApi(Build.VERSION_CODES.S)
     suspend fun sendHighScoreCelebration(hm10helper: HM10BluetoothHelper) {
-
-        hm10helper.sendMessage("WIN\r\n")
-
+        hm10helper.sendMessage("CM\r\n")
+        delay(2000)
+        hm10helper.sendMessage("CF\r\n")
     }
 }
