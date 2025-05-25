@@ -5,9 +5,26 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,20 +35,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cobot.R
-import com.example.cobot.bluetooth.HM10BluetoothHelper
-import com.example.cobot.automated_driving.SimpleLandmark
+import com.example.cobot.automated_driving.CameraPreview
 import com.example.cobot.automated_driving.estimateDistance
 import com.example.cobot.automated_driving.setupPoseLandmarker
-import com.example.cobot.automated_driving.CameraPreview
-import com.example.cobot.robot_face.Emotion
-import com.example.cobot.robot_face.RobotFace
-import com.example.cobot.robot_face.faces.drawAngryFace
+import com.example.cobot.bluetooth.HM10BluetoothHelper
 import com.example.cobot.robot_face.faces.drawFollowingFace
-import com.example.cobot.robot_face.faces.drawHappyFace
-import com.example.cobot.robot_face.faces.drawNeutralFace
-import com.example.cobot.robot_face.faces.drawSadFace
-import com.example.cobot.robot_face.faces.drawSleepingFace
-import com.example.cobot.robot_face.faces.drawSurprisedFace
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 
@@ -43,7 +51,6 @@ fun AutomationRobotFaceScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val state by hM10BluetoothHelper.connectionState
 
     // Detection state (boundingBox still tracked internally)
     var detectedPosition by remember { mutableStateOf("Detecting...") }

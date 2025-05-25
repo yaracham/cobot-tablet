@@ -29,11 +29,10 @@ fun DrawScope.drawFollowingFace(
     // Draw static eyes (no blinking)
     for (side in listOf(-1f, 1f)) {
         val x = centerX + side * eyeSpacing + eyeMoveOffset
-        val topOffset = eyeTop
 
         drawRoundRect(
             color = Color.Blue,
-            topLeft = Offset(x - 20f, topOffset),
+            topLeft = Offset(x - 20f, eyeTop),
             size = Size(80f, fullHeight),
             cornerRadius = CornerRadius(50f, 50f)
         )

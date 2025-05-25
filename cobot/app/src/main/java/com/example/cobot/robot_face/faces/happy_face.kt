@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 
-fun DrawScope.drawHappyFace(centerX: Float, centerY: Float, blink: Float, eyeCurve: Float, mouthRadius: Float) {
+fun DrawScope.drawHappyFace(centerX: Float, centerY: Float, eyeCurve: Float, mouthRadius: Float) {
     val eyeSpacing = 120f
     val eyeTop = centerY - 210f // match neutral positioning
 

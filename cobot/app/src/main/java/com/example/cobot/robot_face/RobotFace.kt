@@ -12,9 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import com.example.cobot.robot_face.faces.drawAngryFace
-import com.example.cobot.robot_face.faces.drawConnectingFace
 import com.example.cobot.robot_face.faces.drawHappyFace
 import com.example.cobot.robot_face.faces.drawNeutralFace
 import com.example.cobot.robot_face.faces.drawSadFace
@@ -76,8 +74,8 @@ fun RobotFace(emotion: Emotion) {
         when (emotion) {
             Emotion.ANGRY -> drawAngryFace(centerX, centerY)
             Emotion.SAD -> drawSadFace(centerX, centerY)
-            Emotion.HAPPY -> drawHappyFace(centerX, centerY, blinkProgress.value, eyeCurve, mouthRadius)
-            Emotion.NEUTRAL -> drawNeutralFace(centerX, centerY, blinkProgress.value, eyeCurve, mouthRadius)
+            Emotion.HAPPY -> drawHappyFace(centerX, centerY, eyeCurve, mouthRadius)
+            Emotion.NEUTRAL -> drawNeutralFace(centerX, centerY, blinkProgress.value)
             Emotion.SURPRISED -> drawSurprisedFace(centerX, centerY)
             Emotion.SLEEPING -> drawSleepingFace(centerX, centerY)
         }

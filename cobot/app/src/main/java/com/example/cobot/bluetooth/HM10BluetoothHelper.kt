@@ -15,19 +15,18 @@ import java.util.*
 class HM10BluetoothHelper(private val context: Context) {
 
     private var bluetoothGatt: BluetoothGatt? = null
-    private val targetDeviceMacAddress = "3C:A3:08:90:7D:62" // Replace with your device's MAC
+    private val targetDeviceMacAddress = "3C:A3:08:90:7D:62" // Replace with your device's MAC if changed
     val connectionState = mutableStateOf<BluetoothConnectionState>(BluetoothConnectionState.Idle)
     var receivedMessage = mutableStateOf("") // State for the received message
 
     private val bluetoothAdapter: BluetoothAdapter? =
-        (context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager).adapter
+        (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
 
     private val serviceUuid = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")
     private val characteristicUuid = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
 
     @RequiresApi(Build.VERSION_CODES.S)
     fun connectDirectly() {
-        Log.v("HII", "hereeeeeeeeeee")
         connectionState.value = BluetoothConnectionState.Connecting
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)

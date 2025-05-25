@@ -1,19 +1,14 @@
 package com.example.cobot.robot_face.faces
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 
 fun DrawScope.drawSadFace(centerX: Float, centerY: Float) {
-    val eyeLength = 90f
     val eyeOffsetX = 130f
-    val eyeTop = centerY - 100f
-    val mouthRadius = 100f
     val eyeRadius = 45f
     val eyeY = centerY - 100f
     // Left Eye

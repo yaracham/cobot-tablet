@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 
-fun DrawScope.drawNeutralFace(centerX: Float, centerY: Float, blink: Float, eyeCurve: Float, mouthRadius: Float) {
+fun DrawScope.drawNeutralFace(centerX: Float, centerY: Float, blink: Float) {
     val eyeSpacing = 130f
     val eyeTop = centerY - 240f
 
@@ -28,7 +28,6 @@ fun DrawScope.drawNeutralFace(centerX: Float, centerY: Float, blink: Float, eyeC
         )
     }
 
-    // Slightly right-shifted, rounded smiling mouth
     val mouthWidth = 280f
     val mouthY = centerY + 140f
     val curveHeight = 60f

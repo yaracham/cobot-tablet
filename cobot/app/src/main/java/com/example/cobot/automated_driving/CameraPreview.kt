@@ -12,7 +12,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -31,8 +30,6 @@ fun CameraPreview(
     onBoundingBoxUpdated: (RectF?) -> Unit,
     onLandmarksUpdated: (List<SimpleLandmark>) -> Unit
 ) {
-    val context = LocalContext.current
-
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
@@ -46,7 +43,7 @@ fun CameraPreview(
                 val cameraProvider = cameraProviderFuture.get()
 
                 val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
+                    it.surfaceProvider = previewView.surfaceProvider
                 }
 
                 val imageAnalysis = ImageAnalysis.Builder()

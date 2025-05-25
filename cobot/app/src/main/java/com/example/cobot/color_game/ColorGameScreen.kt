@@ -7,30 +7,45 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import com.example.cobot.R
 import com.example.cobot.bluetooth.HM10BluetoothHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
-import com.example.cobot.color_game.GameHelper
-import com.example.cobot.R
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -53,7 +68,7 @@ fun ColorGameScreen(
         Color(0xFFFF9800), // 0 = Orange
         Color(0xFF4CAF50), // 1 = Green
         Color(0xFF00BCD4), // 2 = Blue
-        Color(0xFFFF00FF), // 3 = Yellow
+        Color(0xFFFF00FF), // 3 = Fuchsia
         Color(0xFFF44336), // 4 = Red
         Color(0xFF800080)  // 5 = Purple
     )
@@ -97,7 +112,6 @@ fun ColorGameScreen(
         Log.d("GAME", "Current sequence: ${sequence.joinToString()}")
 
         for (index in sequence) {
-            Log.d("GAMEE", commands[index])
             hm10helper.sendMessage(commands[index] + "\r\n")
             delay(700)
         }
