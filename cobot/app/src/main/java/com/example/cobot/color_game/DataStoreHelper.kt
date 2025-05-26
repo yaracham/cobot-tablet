@@ -1,4 +1,14 @@
 package com.example.cobot.color_game
+/**
+ * This file provides functionality to persist and retrieve player scores
+ * using Jetpack DataStore with JSON serialization.
+ *
+ * - `savePlayerScore`: Saves or updates a player's score, ensures unique names,
+ *   sorts scores in descending order, and stores them as a JSON string.
+ * - `getPlayerScores`: Retrieves the list of saved scores, deserializing from JSON.
+ *
+ * Scores are stored in shared preferences under the key "scores_json".
+ */
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit

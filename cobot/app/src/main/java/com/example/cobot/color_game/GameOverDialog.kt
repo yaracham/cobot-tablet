@@ -1,4 +1,17 @@
 package com.example.cobot.color_game
+/**
+ * This file defines the `GameOverDialog` composable, which shows an end-of-game dialog
+ * with the player's score, a text input to save their name, and a list of previous scores.
+ *
+ * Features:
+ * - Highlights if the player achieved a new high score.
+ * - Allows the user to enter or update their name before saving the score.
+ * - Displays a scrollable list of previous scores sorted in descending order.
+ *   The highest score is visually emphasized with a special background color.
+ * - Provides buttons to submit or cancel the action.
+ *
+ * Used in the color game to handle post-game user interaction.
+ */
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

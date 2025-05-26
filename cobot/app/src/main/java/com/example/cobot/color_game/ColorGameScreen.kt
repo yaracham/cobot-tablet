@@ -1,4 +1,30 @@
 package com.example.cobot.color_game
+/**
+ * ColorGameScreen.kt
+ *
+ * This composable implements a memory-based color sequence game using Jetpack Compose.
+ * Players must correctly reproduce a growing sequence of color cues by tapping color buttons
+ * arranged in a circular layout. The game increases in difficulty with each level by appending
+ * a new random color to the sequence.
+ *
+ * Features:
+ * - Interactive color buttons with real-time feedback.
+ * - Sequence playback through HM-10 Bluetooth module integration (uses `HM10BluetoothHelper`).
+ * - Audio feedback on win/lose states using local sound resources.
+ * - Local score saving and display of high scores with player names.
+ * - Custom winning and losing light animations via external `GameHelper`.
+ *
+ * Reusability:
+ * - Fully self-contained Composable and compatible with other Compose UIs.
+ * - Modular functions allow easy adaptation for different UI styles or hardware interfaces.
+ * - Uses `@Composable` best practices and `LaunchedEffect` for lifecycle-aware state transitions.
+ *
+ * Requirements:
+ * - Android S (API 31) or higher (due to `@RequiresApi` and MediaPlayer usage).
+ * - HM-10 Bluetooth module setup for serial message interaction.
+ * - `GameHelper`, `PlayerScore`, and score persistence helpers (e.g., `savePlayerScore`, `getPlayerScores`) implemented externally.
+ *
+ */
 
 import android.media.MediaPlayer
 import android.os.Build

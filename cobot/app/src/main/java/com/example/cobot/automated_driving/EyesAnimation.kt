@@ -1,4 +1,23 @@
 package com.example.cobot.automated_driving
+/**
+ * EyesAnimation.kt
+ *
+ * This file defines the `EyesAnimation` composable, a visual component that displays animated robot eyes which
+ * react to the user's position by shifting the pupils smoothly to the LEFT, CENTER, or RIGHT.
+ *
+ * Core Components:
+ * - `EyesAnimation`: A Jetpack Compose Composable that draws two circular eyes and animates the pupils using
+ *   a spring-based offset based on directional input.
+ * - Direction tracking: Interprets string input ("LEFT", "CENTER", "RIGHT") and updates the pupil position accordingly.
+ * - Smooth animation: Uses Jetpack Compose’s spring animation for fluid eye movement transitions.
+ *
+ * Parameters:
+ * @param modifier Modifier for layout customization in Compose.
+ * @param direction String indicating user position (LEFT, CENTER, RIGHT).
+ *
+ * This component is designed for use in interactive or robot-assisted UI, providing a responsive and intuitive
+ * feedback mechanism that mimics human-like attention behavior.
+ */
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring

@@ -1,4 +1,15 @@
 package com.example.cobot.robot_face
+/**
+ * RobotFace.kt
+ *
+ * Composable that renders a robot face animation based on the given emotion.
+ * Uses animated transitions to smoothly change facial features such as eyes and mouth.
+ * Supports blinking animation in the neutral state and adjusts face drawing
+ * for emotions: Happy, Sad, Angry, Neutral, Surprised, and Sleeping.
+ *
+ * Relies on custom drawing functions for each emotion imported from faces package.
+ *
+ */
 
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween

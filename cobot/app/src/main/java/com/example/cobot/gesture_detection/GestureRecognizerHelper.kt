@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 package com.example.cobot.gesture_detection
+/****************************************************
+ * File: GestureRecognizerHelper.kt
+ * Description:
+ * This file implements a helper class for hand gesture
+ * recognition using MediaPipe's GestureRecognizer. It includes:
+ *  - Initialization of the recognizer with runtime options
+ *  - Image-based and live-stream-based gesture inference
+ *  - Support for CPU and GPU delegates
+ *  - Inference timing and error handling
+ *
+ * Used in: Real-time hand gesture detection from static images
+ *          or live camera streams
+ ****************************************************/
 
 import android.content.Context
 import android.graphics.Bitmap

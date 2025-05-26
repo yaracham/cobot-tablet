@@ -1,5 +1,32 @@
 package com.example.cobot.automated_driving
 
+/**
+ * CameraPreview.kt
+ *
+ * This file defines the `CameraPreview` composable function which sets up a live camera feed using Android's CameraX
+ * and integrates MediaPipe's PoseLandmarker to perform real-time human pose detection.
+ *
+ * Core Components:
+ * - `CameraPreview`: A Jetpack Compose Composable that displays the camera preview and analyzes each frame.
+ * - ImageAnalysis pipeline: Captures frames from the front camera, converts them to bitmaps, and passes them to
+ *   MediaPipe’s PoseLandmarker.
+ * - PoseLandmarker integration: Extracts landmarks, bounding box, and determines user pose position (e.g., standing, sitting).
+ * - Callback architecture: Allows external components to receive updates for detected pose position, bounding box,
+ *   and landmarks for further use (e.g., UI, logic, logging).
+ *
+ * Parameters:
+ * @param modifier Modifier for layout customization in Compose.
+ * @param lifecycleOwner Lifecycle owner used to bind the camera lifecycle.
+ * @param cameraExecutor ExecutorService for background camera analysis work.
+ * @param poseLandmarker Optional instance of MediaPipe PoseLandmarker for human pose detection.
+ * @param onPositionDetected Callback triggered with a string indicating the user's pose position.
+ * @param onBoundingBoxUpdated Callback triggered with the bounding box surrounding detected landmarks.
+ * @param onLandmarksUpdated Callback triggered with a list of detected pose landmarks.
+ *
+ * This module is designed to be modular and reusable for applications involving real-time motion tracking,
+ * gesture-based interaction, or fitness-related use cases.
+ */
+
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.graphics.RectF

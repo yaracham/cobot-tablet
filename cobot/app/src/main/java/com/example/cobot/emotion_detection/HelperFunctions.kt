@@ -1,4 +1,16 @@
 package com.example.cobot.emotion_detection
+/****************************************************
+ * File: HelperFunctions.kt
+ * Description:
+ * This file handles emotion detection using MediaPipe's
+ * FaceLandmarker with blendshape analysis. It includes:
+ *  - YUV to RGB conversion for CameraX ImageProxy input
+ *  - Initialization of the FaceLandmarker
+ *  - Detection and extraction of blendshapes
+ *  - Emotion classification from blendshape scores
+ *
+ * Used in: Real-time emotion recognition from camera input
+ ****************************************************/
 
 import android.content.Context
 import android.graphics.Bitmap

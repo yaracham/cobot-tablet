@@ -1,4 +1,16 @@
 package com.example.cobot
+/**
+ * AppView.kt
+ *
+ * Main Composable that manages navigation between different app screens based on the current state.
+ * Supports switching between automation driving, emotion detection with robot face,
+ * automation robot face screen, and a color game screen.
+ *
+ * Integrates with HM10BluetoothHelper for Bluetooth communication across screens.
+ *
+ * Requires Android S (API 31) or higher.
+ *
+ */
 
 import android.os.Build
 import androidx.annotation.RequiresApi

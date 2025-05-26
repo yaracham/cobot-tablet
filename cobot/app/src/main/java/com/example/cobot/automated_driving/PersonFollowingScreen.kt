@@ -1,5 +1,30 @@
 package com.example.cobot.automated_driving
 
+/**
+ * PersonFollowingScreen.kt
+ *
+ * This file defines the `PersonFollowingScreen` composable, which serves as the main UI screen for a person-following
+ * robotic module. It combines camera pose tracking with Bluetooth communication to enable real-time robot movement
+ * based on user position.
+ *
+ * Core Components:
+ * - `CameraPreview`: Displays live camera feed and runs pose detection using MediaPipe.
+ * - Position & distance detection: Extracts body landmarks and bounding box to determine user location (LEFT, CENTER, RIGHT)
+ *   and proximity.
+ * - Bluetooth integration: Sends directional movement commands to a robot via HM-10 Bluetooth module based on tracking data.
+ * - UI feedback: Shows animated eyes and real-time movement command feedback.
+ *
+ * Parameters:
+ * @param modifier Modifier for layout customization.
+ * @param poseLandmarker Instance of PoseLandmarker used for detecting body landmarks.
+ * @param cameraExecutor ExecutorService handling camera frame analysis.
+ * @param lifecycleOwner LifecycleOwner binding the camera lifecycle.
+ * @param bluetoothSocket Active BluetoothSocket for communication with the robot.
+ *
+ * This screen acts as the control hub for a robot assistant that visually follows a user, ideal for indoor navigation,
+ * companion robots, or research in human-robot interaction.
+ */
+
 import android.graphics.RectF
 import android.os.Build
 import android.util.Log
@@ -66,7 +91,7 @@ fun PersonFollowingScreen(hM10BluetoothHelper: HM10BluetoothHelper, onShowRobotF
     LaunchedEffect(Unit) {
         while (true) {
             val box = boundingBox
-            val command = if (box != null && !isBoxTooSmall(box) ) {
+            val command = if (box != null && !isBoxTooSmall(box)) {
                 when (detectedPosition) {
                     "RIGHT" -> "FR\r\n"
                     "LEFT" -> "FL\r\n"

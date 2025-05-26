@@ -1,4 +1,23 @@
 package com.example.cobot.bluetooth
+/**
+ * BluetoothConnectionDialog.kt
+ *
+ * This file defines the `BluetoothConnectionDialog` composable, which provides user feedback during Bluetooth connection
+ * processes. It displays modal dialogs for ongoing connection attempts and error states to ensure the user is informed
+ * and can take corrective action.
+ *
+ * Core Components:
+ * - Alert dialogs for Bluetooth connection states (`Connecting`, `Error`)
+ * - Retry and dismiss actions to allow user intervention
+ *
+ * Parameters:
+ * @param state Current `BluetoothConnectionState` indicating the connection progress or issue.
+ * @param onRetry Callback triggered when the user opts to retry the connection.
+ * @param onDismiss Callback triggered when the user cancels or closes the dialog.
+ *
+ * This composable is intended to improve the user experience by clearly communicating Bluetooth status and allowing
+ * retry or exit actions without leaving the screen.
+ */
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

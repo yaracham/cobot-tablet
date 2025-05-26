@@ -1,4 +1,22 @@
 package com.example.cobot.bluetooth
+/**
+ * HM10BluetoothHelper.kt
+ *
+ * This file contains the `HM10BluetoothHelper` class, which manages BLE communication with an HM-10 Bluetooth module.
+ * It handles permission checks, device connection, message transmission, and notification-based message reception.
+ *
+ * Core Components:
+ * - Bluetooth connection management: Directly connects to a predefined HM-10 device using its MAC address.
+ * - Data transmission: Sends messages to a writable GATT characteristic.
+ * - Data reception: Receives notifications when characteristic values change.
+ * - State monitoring: Updates a `BluetoothConnectionState` observable for UI integration.
+ *
+ * Functions:
+ * @param context Android `Context` used to access system Bluetooth services and permissions.
+ *
+ * This helper class abstracts the complexity of BLE operations and provides a clean interface for real-time
+ * data exchange with Bluetooth peripherals, enabling smooth integration into reactive UIs and robotics applications.
+ */
 
 import android.Manifest
 import android.bluetooth.*

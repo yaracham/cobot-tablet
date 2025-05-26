@@ -1,4 +1,19 @@
 package com.example.cobot.automated_driving
+/**
+ * PoseDetection.kt
+ *
+ * This file provides functionality for detecting and tracking the bounding box of a person in camera frames
+ * using pose landmarks from MediaPipe.
+ *
+ * Core Components:
+ * - `detectPositionAndDistance`: Calculates horizontal position (LEFT, CENTER, RIGHT) and proximity (NEAR, MID, FAR)
+ *   based on landmarks and screen dimensions.
+ * - `calculateBoundingBox`: Computes the bounding box dimensions (x, y, width, height) surrounding the user
+ *   based on pose landmarks.
+ *
+ * This utility is used to interpret pose data spatially, enabling context-aware responses like directional movement
+ * or distance-based behavior adjustments in human-following robots.
+ */
 
 import android.content.Context
 import android.graphics.RectF

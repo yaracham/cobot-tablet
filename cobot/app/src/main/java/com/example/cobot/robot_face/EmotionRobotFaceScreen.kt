@@ -1,4 +1,20 @@
 package com.example.cobot.robot_face
+/**
+ * EmotionRobotFaceScreen.kt
+ *
+ * A composable screen that captures camera frames to detect facial emotions and hand gestures
+ * using MediaPipe's face landmarker and gesture recognizer. Based on detected emotions and gestures,
+ * it sends corresponding Bluetooth commands to control a robot's facial expressions.
+ *
+ * Features:
+ * - Real-time emotion classification from face blendshapes.
+ * - Gesture detection to trigger robot commands.
+ * - Manages Bluetooth connection state and UI indication.
+ * - Automatically triggers "sleeping" state after prolonged neutral expression.
+ *
+ * Requires: Android S (API 31) or higher for Bluetooth permissions and camera usage.
+ *
+ */
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap

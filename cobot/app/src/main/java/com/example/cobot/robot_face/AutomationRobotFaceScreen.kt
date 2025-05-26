@@ -1,4 +1,15 @@
 package com.example.cobot.robot_face
+/**
+ * AutomationRobotFaceScreen.kt
+ *
+ * This composable displays a robot face interface that reacts to human position detection
+ * using pose landmarks from a hidden camera feed. It sends directional commands via Bluetooth
+ * to a robot based on the detected position (LEFT, RIGHT, CENTER) and shows a UI overlay
+ * with the current detection state. It also draws a dynamic robot face that follows movement.
+ *
+ * Requires: Android S (API 31) or higher due to Bluetooth permissions.
+ *
+ */
 
 import android.graphics.RectF
 import android.os.Build

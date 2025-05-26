@@ -1,4 +1,23 @@
 package com.example.cobot.automated_driving
+/**
+ * ImageProcessing.kt
+ *
+ * This file contains utility functions for handling and processing image frames captured via Android’s Camera2 API.
+ * It includes conversion from camera-native YUV format to bitmap, and manipulation tools for rotating and mirroring
+ * images — particularly useful for front-facing camera analysis.
+ *
+ * Core Components:
+ * - `mediaImageToBitmap`: Converts a YUV_420_888 Image into a JPEG Bitmap by compressing the byte buffer.
+ * - `rotateBitmap`: Rotates and mirrors a bitmap image as needed for front-camera orientation correction.
+ *
+ * Functions:
+ * @param image The `Image` object captured from the camera.
+ * @param rotationDegrees The angle of rotation to apply to the bitmap.
+ * @param mirrorHorizontal Boolean indicating whether the image should be flipped horizontally.
+ *
+ * These utilities support real-time visual processing workflows, including pose detection, gesture tracking,
+ * and augmented reality applications where accurate frame representation is critical.
+ */
 
 import android.graphics.*
 import android.media.Image

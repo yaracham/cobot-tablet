@@ -1,4 +1,17 @@
 package com.example.cobot.emotion_detection
+/**
+ * This file defines the `CameraPreview` composable, which sets up a live camera preview
+ * and analyzes camera frames using CameraX with a front-facing camera.
+ *
+ * Features:
+ * - Uses Jetpack Compose and CameraX to render a live camera feed inside a `PreviewView`.
+ * - Captures a single frame when the `captureFrame` value increases, ensuring that each
+ *   frame is only processed once.
+ * - Converts the captured frame to a `Bitmap` and invokes the `onFrameCaptured` callback.
+ * - Ensures compatibility and lifecycle safety by binding to a `LifecycleOwner`.
+ *
+ * Used in the emotion detection feature to extract and analyze frames from the camera stream.
+ */
 
 import android.content.Context
 import android.graphics.Bitmap
